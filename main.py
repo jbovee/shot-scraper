@@ -15,18 +15,17 @@ def main():
 
 def get_teams():
 	#return list of each team and link to their page on ESPN
-	teamsPage = 'http://www.espn.com/mens-college-basketball/teams'
-	allTeams = requests.get(teamsPage)
+	teamsPageLink = 'http://www.espn.com/mens-college-basketball/teams'
+	teamsPage = requests.get(teamsPageLink)
 	allTeamsLinks = {}
 	teamLinkPattern = re.compile(r'mens-college-basketball/team/_/id/[0-9]+/[a-z-]+')
-	'''
-	for link in BeautifulSoup(allTeams.text, 'lxml', parse_only=SoupStrainer('a', href=True)).find_all('a'):
-		if teamLinkPattern.search(link.get('href')):
-			allTeamsLinks[link.text] = link.get('href')
-	'''
-	for division in BeautifulSoup(allTeams.text, 'lxml').find_all('div', class_='mod-teams-list-medium'):
+	for division in BeautifulSoup(teamsPage.text, 'lxml').find_all('div', class_='mod-teams-list-medium'):
 		divisionName = division.find('div', class_='mod-header').find('h4').text
-		print(divisionName)
+		allTeamsLinks[divisionName] = {}
+		divisionLinksDiv = division.find('div', class_='mod-content')
+		for link in divisionLinksDiv.find_all('a'):
+			if teamLinkPattern.search(link.get('href')):
+				allTeamsLinks[divisionName][link.text] = link.get('href')
 
 	teamLinkEx = "http://www.espn.com/mens-college-basketball/team/_/id/399/albany-great-danes"
 
