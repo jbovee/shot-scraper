@@ -7,11 +7,9 @@ import re
 import json
 
 def main():
-	teams = get_teams()
-	'''
-	for team,link in teams:
-		get_team_stats(team, link)
-	'''
+	divisions = get_teams()
+	for division in divisions:
+		print(divisions[division])
 
 def get_teams():
 	#return list of each team and link to their page on ESPN
@@ -25,12 +23,13 @@ def get_teams():
 		divisionLinksDiv = division.find('div', class_='mod-content')
 		for link in divisionLinksDiv.find_all('a'):
 			if teamLinkPattern.search(link.get('href')):
-				allTeamsLinks[divisionName][link.text] = link.get('href')
-
-	teamLinkEx = "http://www.espn.com/mens-college-basketball/team/_/id/399/albany-great-danes"
+				allTeamsLinks[divisionName][link.text] = {}
+				allTeamsLinks[divisionName][link.text]["teamLink"] = link.get('href')
+	return allTeamsLinks
 
 def get_team_stats(teamName, teamLink):
 	#create JSON file for given team containing stats on shots for each player
+	teamLinkEx = "http://www.espn.com/mens-college-basketball/team/_/id/399/albany-great-danes"
 	return "blank"
 
 if __name__ == "__main__":
