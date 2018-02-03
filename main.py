@@ -6,6 +6,8 @@ import os
 import re
 import json
 
+#allow for specifying year?
+
 def main():
 	divisions = get_teams()
 	for division in divisions:
@@ -39,6 +41,29 @@ def get_team_stats(teamName, teamLink):
 	gameEx = "http://www.espn.com/ncb/recap/_/gameId/400989985"
 	gameLinkPattern = re.compile(r'mens-college-basketball/game?gameId=[0-9]+')
 	return "blank"
+
+def parse_game(gameLink):
+	#parse a given game
+	#return a JSON element containing shot info for each player
+	#include players who didn't take shots
+	#list of all players can be found in button dropdown
+	#<div class="team away/home">
+	#	<div data-behavior="button_dropdown">
+	#		<ul class="playerfilter">
+	#			<li>...
+	return
+
+def parse_shotmap():
+	#parse a shotmap on the play-by-play page for a game
+	#return two lists of shots (one for each team, home and away) with info for:
+	# who, where, missed/made, shot #, type (jumper, 3 pt jumper, layup, dunk, etc.), game half
+	return
+
+def parse_pbp():
+	#parse the first and second half play-by-plays for a game
+	#return two lists of shots (one for each team, home and away) with info for:
+	# who, missed/made, shot #, type (jumper, 3pt jumper, layup, dunk, etc.), game half, time, assist?, team score?
+	return
 
 if __name__ == "__main__":
 	main()
