@@ -14,7 +14,8 @@ def main():
 	for division in divisions:
 		print(divisions[division])
 	'''
-	print(get_games("http://www.espn.com/mens-college-basketball/team/schedule/_/id/2305"))
+	#just using one teams games to test for now
+	kugames = get_games("http://www.espn.com/mens-college-basketball/team/schedule/_/id/2305")
 
 def get_teams():
 	#return list of each team and link to their page on ESPN
@@ -54,7 +55,7 @@ def get_games(teamScheduleLink):
 	gameRecapPattern = re.compile(r'ncb/recap/_/gameId/[0-9]+')
 	for link in BeautifulSoup(schedulePage.text, 'lxml').find_all('a', href=True):
 		if gameRecapPattern.search(link.get('href')):
-			gameLinks.append(re.sub(r'\D+', 'http://www.espn.com/mens-college-basketball/game?gameId=', link.get('href')))
+			gameLinks.append(re.sub(r'\D+', 'http://www.espn.com/mens-college-basketball/playbyplay?gameId=', link.get('href')))
 	return gameLinks
 
 def parse_game(gameLink):
@@ -66,6 +67,21 @@ def parse_game(gameLink):
 	#	<div data-behavior="button_dropdown">
 	#		<ul class="playerfilter">
 	#			<li>...
+	gamePage = requests.get(gameLink)
+	homeTeam = {}
+	awayTeam = {}
+	homeList = BeautifulSoup(gamePage.text, 'lxml').select('div.team.home ul.playerfilter li')
+	awayList = BeautifulSoup(gamePage.text, 'lxml').select('div.team.away ul.playerfilter li')
+	for player in homeList:
+		if int(player.get('data-playerid')) != 0:
+			homeTeam[player.select('a')[0].text] = int(player.get('data-playerid'))
+	for player in awayList:
+		if int(player.get('data-playerid')) != 0:
+			awayTeam[player.select('a')[0].text] = int(player.get('data-playerid'))
+
+	shotMap = BeautifulSoup(gamePage.text, 'lxml').find('div', id='gamepackage-shot-chart')
+	playByPlay = BeautifulSoup(gamePage.text, 'lxml').find('div', id='gamepackage-play-by-play')
+	pbpHalves = parse_pbp(playByPlay)
 	return
 
 def parse_shotmap():
@@ -78,6 +94,16 @@ def parse_pbp():
 	#parse the first and second half play-by-plays for a game
 	#return two lists of shots (one for each team, home and away) with info for:
 	# who, missed/made, shot #, type (jumper, 3pt jumper, layup, dunk, etc.), game half, time, assist?, team score?
+	#for each play
+	#	check if is a shot
+	#		typically has words 'made', 'makes', 'missed', 'misses'
+	#		has type of shot ('jumper', 'three point jumper', 'layup', 'dunk', etc)
+	#		made shots always have 'scoring-play' class (free throws do too though. either filter out or also collect)
+	#	store index as 'shot#' to pair with shot map
+	#	get player name
+	#	time of shot?
+	#	check for assists, and by who?
+	#	team score after shot?
 	return
 
 if __name__ == "__main__":
