@@ -82,9 +82,9 @@ def parse_pbp():
 	#parse the first and second half play-by-plays for a game
 	#return two lists of shots (one for each team, home and away) with info for:
 	# who, missed/made, shot #, type (jumper, 3pt jumper, layup, dunk, etc.), game half, time, assist?, team score?
-	isShot = re.compile(r'layup|jumper|free throw|dunk', re.IGNORECASE)
-	shotPatterns = [[r'layup',r'three point jumper',r'jumper',r'dunk',r'free throw'],
-					['Layup','Three Point Jumper','Jumper','Dunk','Free Throw']]
+	isShot = re.compile(r'layup|jumper|dunk', re.IGNORECASE)
+	shotPatterns = [[r'layup',r'three point jumper',r'jumper',r'dunk'],
+					['Layup','Three Point Jumper','Jumper','Dunk']]
 	homeTeam = {}
 	awayTeam = {}
 	homeList = BeautifulSoup(game.text, 'lxml').select('div.team.home ul.playerfilter li')
