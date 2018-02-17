@@ -82,11 +82,13 @@ def parse_pbp():
 	#parse the first and second half play-by-plays for a game
 	#return two lists of shots (one for each team, home and away) with info for:
 	# who, missed/made, shot #, type (jumper, 3pt jumper, layup, dunk, etc.), game half, time, assist?, team score?
-	isShot = re.compile(r'layup|jumper|dunk', re.IGNORECASE)
-	shotPatterns = [[r'layup',r'three point jumper',r'jumper',r'dunk'],
-					['Layup','Three Point Jumper','Jumper','Dunk']]
+	isShot = re.compile(r'layup|jumper|dunk|two point tip shot', re.IGNORECASE)
+	shotPatterns = [[r'layup',r'three point jumper',r'jumper',r'dunk',r'two point tip shot'],
+					['Layup','Three Point Jumper','Jumper','Dunk','Two Point Tip Shot']]
 	homeTeam = {}
 	awayTeam = {}
+	homePbpShots = []
+	awayPbpShots = []
 	homeList = BeautifulSoup(game.text, 'lxml').select('div.team.home ul.playerfilter li')
 	awayList = BeautifulSoup(game.text, 'lxml').select('div.team.away ul.playerfilter li')
 	for player in homeList[1:]:
@@ -109,17 +111,17 @@ def parse_pbp():
 				if re.search(shotPatterns[0][s], playText, re.IGNORECASE):
 					shotType = shotPatterns[1][s]
 					break
-			if shooter in homeTeam:
-				shotIndex = homeShotIndex
-				homeShotIndex += 1
-			elif shooter in awayTeam:
-				shotIndex = awayShotIndex
-				awayShotIndex += 1
 			made = True if play.get('class') else False
 			time = play.find('td', class_='time-stamp').text
 			scores = play.find('td', class_='combined-score').text
-			print(shotIndex,'\t',time,'\t',shooter,'\t',shotType,'\t',scores,'\t',made)
-			print()
+			if shooter in homeTeam:
+				shotIndex = homeShotIndex
+				homePbpShots.append([shotIndex,time,homeTeam[shooter],shotType,scores,made])
+				homeShotIndex += 1
+			elif shooter in awayTeam:
+				shotIndex = awayShotIndex
+				awayPbpShots.append([shotIndex,time,awayTeam[shooter],shotType,scores,made])
+				awayShotIndex += 1
 
 	for play in second:
 		playText = play.find('td', class_='game-details').text
@@ -130,17 +132,18 @@ def parse_pbp():
 				if re.search(shotPatterns[0][s], playText, re.IGNORECASE):
 					shotType = shotPatterns[1][s]
 					break
-			if shooter in homeTeam:
-				shotIndex = homeShotIndex
-				homeShotIndex += 1
-			elif shooter in awayTeam:
-				shotIndex = awayShotIndex
-				awayShotIndex += 1
 			made = True if play.get('class') else False
 			time = play.find('td', class_='time-stamp').text
 			scores = play.find('td', class_='combined-score').text
-			print(shotIndex,'\t',time,'\t',shooter,'\t',shotType,'\t',scores,'\t',made)
-			print()
+			if shooter in homeTeam:
+				shotIndex = homeShotIndex
+				homePbpShots.append([shotIndex,1,time,shooter,shotType,scores,made])
+				homeShotIndex += 1
+			elif shooter in awayTeam:
+				shotIndex = awayShotIndex
+				awayPbpShots.append([shotIndex,2,time,shooter,shotType,scores,made])
+				awayShotIndex += 1
+
 	#for each play
 	#	check if is a shot
 	#		typically has words 'made', 'makes', 'missed', 'misses'
@@ -151,7 +154,7 @@ def parse_pbp():
 	#	time of shot?
 	#	check for assists, and by who?
 	#	team score after shot?
-	return
+	return (homePbpShots, awayPbpShots)
 
 if __name__ == "__main__":
 	main()
