@@ -72,13 +72,26 @@ def parse_game(gameLink):
 	playByPlay = BeautifulSoup(gamePage.text, 'lxml').find('div', id='gamepackage-play-by-play')
 	return
 
-def parse_shotmap():
+def parse_shotmap(shotmap):
 	#parse a shotmap on the play-by-play page for a game
 	#return two lists of shots (one for each team, home and away) with info for:
 	# who, where, missed/made, shot #, type (jumper, 3 pt jumper, layup, dunk, etc.), game half
+	homeShots = shotmap.select('ul.shots.home-team li')
+	awayShots = shotmap.select('ul.shots.away-team li')
+
+	coordPattern = re.compile(r'left:([0-9.]+)|top:([0-9.]+)')
+	percent = re.compile(r'\w+:([0-9.]+)')
+	homeCoord = []
+	awayCoord = []
+	for shot in homeShots:
+		styles = shot.get('style').split(';')
+		positions = list(filter(coordPattern.match, styles))
+		coord = [float(percent.match(pos).group(1)) for pos in positions]
+		shooter = int(shot.get('data-shooter'))
+		homeCoord.append([shooter,coord[0],coord[1]])
 	return
 
-def parse_pbp():
+def parse_pbp(pbp):
 	#parse the first and second half play-by-plays for a game
 	#return two lists of shots (one for each team, home and away) with info for:
 	# who, missed/made, shot #, type (jumper, 3pt jumper, layup, dunk, etc.), game half, time, assist?, team score?
@@ -113,6 +126,7 @@ def parse_pbp():
 					break
 			made = True if play.get('class') else False
 			time = play.find('td', class_='time-stamp').text
+			minutes,seconds = int(time.split(':')[0]),int(time.split(':')[1])
 			scores = play.find('td', class_='combined-score').text
 			if shooter in homeTeam:
 				shotIndex = homeShotIndex
