@@ -109,54 +109,33 @@ def parse_pbp(pbp):
 	for player in awayList[1:]:
 		awayTeam[player.select('a')[0].text] = int(player.get('data-playerid'))
 
-	halves = pbp.find('ul', class_='css-accordion').find_all('table')
-	first = halves[0].find_all('tr')[1:]
-	second = halves[1].find_all('tr')[1:]
-	homeShotIndex = 0
-	awayShotIndex = 0
+	gamePeriods = pbp.find('ul', class_='css-accordion').find_all('table')
+	homeShotIndex = awayShotIndex = 0
 
-	for play in first:
-		playText = play.find('td', class_='game-details').text
-		if isShot.search(playText):
-			shotType = None
-			shooter = re.match(r'(.+) (made|missed)', playText).group(1)
-			for s in range(len(shotPatterns[0])):
-				if re.search(shotPatterns[0][s], playText, re.IGNORECASE):
-					shotType = shotPatterns[1][s]
-					break
-			made = True if play.get('class') else False
-			time = play.find('td', class_='time-stamp').text
-			minutes,seconds = int(time.split(':')[0]),int(time.split(':')[1])
-			scores = play.find('td', class_='combined-score').text
-			if shooter in homeTeam:
-				shotIndex = homeShotIndex
-				homePbpShots.append([shotIndex,time,homeTeam[shooter],shotType,scores,made])
-				homeShotIndex += 1
-			elif shooter in awayTeam:
-				shotIndex = awayShotIndex
-				awayPbpShots.append([shotIndex,time,awayTeam[shooter],shotType,scores,made])
-				awayShotIndex += 1
-
-	for play in second:
-		playText = play.find('td', class_='game-details').text
-		if isShot.search(playText):
-			shotType = None
-			shooter = re.match(r'(.+) (made|missed)', playText).group(1)
-			for s in range(len(shotPatterns[0])):
-				if re.search(shotPatterns[0][s], playText, re.IGNORECASE):
-					shotType = shotPatterns[1][s]
-					break
-			made = True if play.get('class') else False
-			time = play.find('td', class_='time-stamp').text
-			scores = play.find('td', class_='combined-score').text
-			if shooter in homeTeam:
-				shotIndex = homeShotIndex
-				homePbpShots.append([shotIndex,1,time,shooter,shotType,scores,made])
-				homeShotIndex += 1
-			elif shooter in awayTeam:
-				shotIndex = awayShotIndex
-				awayPbpShots.append([shotIndex,2,time,shooter,shotType,scores,made])
-				awayShotIndex += 1
+	for period in range(len(gamePeriods)):
+		for play in gamePeriods[period].find_all('tr')[1:]: 
+			playText = play.find('td', class_='game-details').text
+			if isShot.search(playText):
+				shotType = None
+				shooter = re.match(r'(.+) (made|missed)', playText).group(1)
+				for s in range(len(shotPatterns[0])):
+					if re.search(shotPatterns[0][s], playText, re.IGNORECASE):
+						shotType = shotPatterns[1][s]
+						break
+				made = True if play.get('class') else False
+				time = play.find('td', class_='time-stamp').text
+				minutes,seconds = int(time.split(':')[0]),int(time.split(':')[1])
+				scores = play.find('td', class_='combined-score').text
+				if shooter in homeTeam:
+					shotIndex = homeShotIndex
+					score = int(scores.split('-')[1].strip())
+					homePbpShots.append([shotIndex,period+1,minutes,seconds,shooter,shotType,score,made])
+					homeShotIndex += 1
+				elif shooter in awayTeam:
+					shotIndex = awayShotIndex
+					score = int(scores.split('-')[0].strip())
+					awayPbpShots.append([shotIndex,period+1,minutes,seconds,shooter,shotType,score,made])
+					awayShotIndex += 1
 
 	#for each play
 	#	check if is a shot
