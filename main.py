@@ -75,6 +75,19 @@ def parse_game(gameLink):
 	playByPlay = BeautifulSoup(gamePage.text, 'lxml').find('div', id='gamepackage-play-by-play')
 	homePbpShots,awayPbpShots = parse_pbp(playByPlay,homeTeam,awayTeam)
 	homeShotmapShots,awayShotmapShots = parse_shotmap(shotmap)
+	if len(homePbpShots) == len(homeShotmapShots):
+		#go through each shot, adding to database table
+		print("Home shot counts match")
+	else:
+		print("Home shot counts DON'T match, ",gameLink)
+		print(homePbpShots)
+		print(homeShotmapShots)
+	if len(awayPbpShots) == len(awayShotmapShots):
+		print("Away shot counts match")
+	else:
+		print("Away shot counts DON'T match, ",gameLink)
+		print(awayPbpShots)
+		print(awayShotmapShots)
 
 def parse_shotmap(shotmap):
 	#parse a shotmap on the play-by-play page for a game
