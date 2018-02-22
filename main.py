@@ -104,8 +104,14 @@ def parse_shotmap(shotmap):
 		positions = list(filter(coordPattern.match, styles))
 		coord = [float(percent.match(pos).group(1))/10 for pos in positions]
 		shooter = int(shot.get('data-shooter'))
-		homeCoord.append([shooter,coord[0],coord[1]])
 	return
+		homeShotmapShots.append([shooter,coord[0],coord[1]])
+	for shot in awayShots:
+		styles = shot.get('style').split(';')
+		positions = list(filter(coordPattern.match, styles))
+		coord = [float(percent.match(pos).group(1))/10 for pos in positions]
+		shooter = int(shot.get('data-shooter'))
+		awayShotmapShots.append([shooter,coord[0],coord[1]])
 
 def parse_pbp(pbp,homeTeam,awayTeam):
 	#parse the first and second half play-by-plays for a game
