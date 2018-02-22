@@ -9,11 +9,9 @@ import json
 #allow for specifying year?
 
 def main():
-	'''
-	divisions = get_teams()
-	for division in divisions:
-		print(divisions[division])
-	'''
+	conferences = get_teams()
+	for c in conferences:
+		print(c+":")
 
 def get_teams():
 	#return list of each team and link to their page on ESPN
