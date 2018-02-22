@@ -14,8 +14,6 @@ def main():
 	for division in divisions:
 		print(divisions[division])
 	'''
-	#just using one teams games to test for now
-	kugames = get_games("http://www.espn.com/mens-college-basketball/team/schedule/_/id/2305")
 
 def get_teams():
 	#return list of each team and link to their page on ESPN
