@@ -6,10 +6,54 @@ import os
 import re
 import json
 import time
+import sqlite3
 
 #allow for specifying year?
 SECONDS_BETWEEN_REQUESTS = 5
 
+conn = sqlite3.connect('testing.db')
+cur = conn.cursor()
+cur.execute("""DROP TABLE IF EXISTS conference""")
+cur.execute("""CREATE TABLE conference
+			(conferenceID INTEGER PRIMARY KEY NOT NULL, name TEXT)""")
+
+cur.execute("""DROP TABLE IF EXISTS team""")
+cur.execute("""CREATE TABLE team
+			(teamID INTEGER PRIMARY KEY NOT NULL,
+			conferenceID INTEGER NOT NULL,
+			name TEXT,
+			FOREIGN KEY (conferenceID) REFERENCES conference(conferenceID))""")
+
+cur.execute("""DROP TABLE IF EXISTS player""")
+cur.execute("""CREATE TABLE player
+			(playerID INTEGER PRIMARY KEY NOT NULL,
+			teamID INTEGER NOT NULL,
+			FOREIGN KEY (teamID) REFERENCES team(teamID))""")
+
+cur.execute("""DROP TABLE IF EXISTS game""")
+cur.execute("""CREATE TABLE game
+			(gameID INTEGER PRIMARY KEY NOT NULL,
+			homeTeamID INTEGER NOT NULL,
+			awayTeamId INTEGER NOT NULL,
+			gameLink TEXT,
+			FOREIGN KEY (homeTeamID) REFERENCES team(teamID),
+			FOREIGN KEY (awayTeamID) REFERENCES team(teamID))""")
+
+cur.execute("""DROP TABLE IF EXISTS shot""")
+cur.execute("""CREATE TABLE shot
+			(shotID INTEGER PRIMARY KEY NOT NULL,
+			gameID INTEGER NOT NULL,
+			playerID INTEGER NOT NULL,
+			shotMinutes INTEGER,
+			shotSeconds INTEGER,
+			type TEXT,
+			shotNumber INTEGER,
+			made INTEGER,
+			teamScore INTEGER,
+			xPos REAL,
+			yPos REAL,
+			FOREIGN KEY (gameID) REFERENCES game(gameID),
+			FOREIGN KEY (playerID) REFERENCES player(playerID))""")
 
 def main():
 	conferences = get_teams()
