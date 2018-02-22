@@ -33,10 +33,7 @@ def get_teams():
 				#note: schedule link can have team name at end, but doesn't need it
 	return allTeamsLinks
 
-def get_team_stats(teamName, teamScheduleLink):
-	#create JSON file for given team containing stats on shots for each player
-	#return internal JSON for team
-
+def get_team_stats(teamScheduleLink):
 	#some games/teams don't have the nice little court map
 	#check for those and instead use just the timeline to extract shot info
 	#wont have court location info
