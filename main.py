@@ -102,7 +102,7 @@ def parse_shotmap(shotmap):
 	for shot in homeShots:
 		styles = shot.get('style').split(';')
 		positions = list(filter(coordPattern.match, styles))
-		coord = [float(percent.match(pos).group(1)) for pos in positions]
+		coord = [float(percent.match(pos).group(1))/10 for pos in positions]
 		shooter = int(shot.get('data-shooter'))
 		homeCoord.append([shooter,coord[0],coord[1]])
 	return
