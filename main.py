@@ -62,6 +62,13 @@ def parse_game(gameLink):
 	#		<ul class="playerfilter">
 	#			<li>...
 	gamePage = requests.get(gameLink)
+	homeTeam = awayTeam = {}
+	homeList = BeautifulSoup(gamePage.text, 'lxml').select('div.team.home ul.playerfilter li')
+	awayList = BeautifulSoup(gamePage.text, 'lxml').select('div.team.away ul.playerfilter li')
+	for player in homeList[1:]:
+		homeTeam[player.select('a')[0].text] = int(player.get('data-playerid'))
+	for player in awayList[1:]:
+		awayTeam[player.select('a')[0].text] = int(player.get('data-playerid'))
 	shotmap = BeautifulSoup(gamePage.text, 'lxml').find('div', id='gamepackage-shot-chart')
 	playByPlay = BeautifulSoup(gamePage.text, 'lxml').find('div', id='gamepackage-play-by-play')
 	return
