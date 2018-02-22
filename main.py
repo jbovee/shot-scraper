@@ -37,11 +37,6 @@ def get_team_stats(teamScheduleLink):
 	#some games/teams don't have the nice little court map
 	#check for those and instead use just the timeline to extract shot info
 	#wont have court location info
-	teamEx = "http://www.espn.com/mens-college-basketball/team/schedule/_/id/2305"
-	scheduleEx = "http://www.espn.com/mens-college-basketball/team/schedule/_/id/2305"
-	gameRecapEx = "http://www.espn.com/ncb/recap/_/gameId/400989186"
-	gameSummaryEx = "http://www.espn.com/mens-college-basketball/game?gameId=400989186"
-	pbpEx = "http://www.espn.com/mens-college-basketball/playbyplay?gameId=400989186"
 	games = get_games(teamScheduleLink)
 	for g in range(len(games)):
 		print("Parsing game",g,"of",len(games))
