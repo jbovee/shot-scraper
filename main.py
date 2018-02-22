@@ -138,7 +138,7 @@ def parse_pbp(pbp):
 	#	time of shot?
 	#	check for assists, and by who?
 	#	team score after shot?
-	return (homePbpShots, awayPbpShots)
+	return homePbpShots, awayPbpShots
 
 if __name__ == "__main__":
 	main()
