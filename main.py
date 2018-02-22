@@ -73,7 +73,8 @@ def parse_game(gameLink):
 		awayTeam[player.select('a')[0].text] = int(player.get('data-playerid'))
 	shotmap = BeautifulSoup(gamePage.text, 'lxml').find('div', id='gamepackage-shot-chart')
 	playByPlay = BeautifulSoup(gamePage.text, 'lxml').find('div', id='gamepackage-play-by-play')
-	return
+	homePbpShots,awayPbpShots = parse_pbp(playByPlay,homeTeam,awayTeam)
+	homeShotmapShots,awayShotmapShots = parse_shotmap(shotmap)
 
 def parse_shotmap(shotmap):
 	#parse a shotmap on the play-by-play page for a game
