@@ -91,7 +91,7 @@ def parse_shotmap(shotmap):
 		homeCoord.append([shooter,coord[0],coord[1]])
 	return
 
-def parse_pbp(pbp):
+def parse_pbp(pbp,homeTeam,awayTeam):
 	#parse the first and second half play-by-plays for a game
 	#return two lists of shots (one for each team, home and away) with info for:
 	# who, missed/made, shot #, type (jumper, 3pt jumper, layup, dunk, etc.), game half, time, assist?, team score?
