@@ -42,7 +42,10 @@ def get_team_stats(teamScheduleLink):
 	gameRecapEx = "http://www.espn.com/ncb/recap/_/gameId/400989186"
 	gameSummaryEx = "http://www.espn.com/mens-college-basketball/game?gameId=400989186"
 	pbpEx = "http://www.espn.com/mens-college-basketball/playbyplay?gameId=400989186"
-	return "blank"
+	games = get_games(teamScheduleLink)
+	for g in range(len(games)):
+		print("Parsing game",g,"of",len(games))
+		parse_game(games[g])
 
 def get_games(teamScheduleLink):
 	#return a list of game links given a teams schedule page
