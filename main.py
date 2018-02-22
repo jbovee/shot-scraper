@@ -62,6 +62,7 @@ def parse_game(gameLink):
 	#	<div data-behavior="button_dropdown">
 	#		<ul class="playerfilter">
 	#			<li>...
+	gameId = int(re.search(r'gameId=([0-9]+)',gameLink).group(1))
 	gamePage = requests.get(gameLink)
 	homeTeam = awayTeam = {}
 	homeList = BeautifulSoup(gamePage.text, 'lxml').select('div.team.home ul.playerfilter li')
