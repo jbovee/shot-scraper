@@ -12,6 +12,9 @@ def main():
 	conferences = get_teams()
 	for c in conferences:
 		print(c+":")
+		for team in conferences[c]:
+			print("Parsing games for", team)
+			#get_team_stats(conferences[c][team]['teamScheduleLink'])
 
 def get_teams():
 	#return list of each team and link to their page on ESPN
