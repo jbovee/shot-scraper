@@ -5,8 +5,11 @@ import sys
 import os
 import re
 import json
+import time
 
 #allow for specifying year?
+SECONDS_BETWEEN_REQUESTS = 5
+
 
 def main():
 	conferences = get_teams()
@@ -19,6 +22,7 @@ def main():
 def get_teams():
 	#return list of each team and link to their page on ESPN
 	teamsPageLink = 'http://www.espn.com/mens-college-basketball/teams'
+	time.sleep(SECONDS_BETWEEN_REQUESTS)
 	teamsPage = requests.get(teamsPageLink)
 	allTeamsLinks = {}
 	teamLinkPattern = re.compile(r'mens-college-basketball/team/_/id/([0-9]+)/[a-z-]+')
@@ -45,6 +49,7 @@ def get_team_stats(teamScheduleLink):
 
 def get_games(teamScheduleLink):
 	#return a list of game links given a teams schedule page
+	time.sleep(SECONDS_BETWEEN_REQUESTS)
 	schedulePage = requests.get(teamScheduleLink)
 	gameLinks = []
 	gameRecapPattern = re.compile(r'ncb/recap/_/gameId/[0-9]+')
@@ -63,6 +68,7 @@ def parse_game(gameLink):
 	#		<ul class="playerfilter">
 	#			<li>...
 	gameId = int(re.search(r'gameId=([0-9]+)',gameLink).group(1))
+	time.sleep(SECONDS_BETWEEN_REQUESTS)
 	gamePage = requests.get(gameLink)
 	homeTeam = awayTeam = {}
 	homeList = BeautifulSoup(gamePage.text, 'lxml').select('div.team.home ul.playerfilter li')
