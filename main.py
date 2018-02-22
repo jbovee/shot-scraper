@@ -82,8 +82,7 @@ def parse_shotmap(shotmap):
 
 	coordPattern = re.compile(r'left:([0-9.]+)|top:([0-9.]+)')
 	percent = re.compile(r'\w+:([0-9.]+)')
-	homeCoord = []
-	awayCoord = []
+	homeShotmapShots = awayShotmapShots = []
 	for shot in homeShots:
 		styles = shot.get('style').split(';')
 		positions = list(filter(coordPattern.match, styles))
@@ -109,6 +108,7 @@ def parse_pbp(pbp):
 		homeTeam[player.select('a')[0].text] = int(player.get('data-playerid'))
 	for player in awayList[1:]:
 		awayTeam[player.select('a')[0].text] = int(player.get('data-playerid'))
+	homePbpShots = awayPbpShots = []
 
 	gamePeriods = pbp.find('ul', class_='css-accordion').find_all('table')
 	homeShotIndex = awayShotIndex = 0
