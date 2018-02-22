@@ -98,16 +98,6 @@ def parse_pbp(pbp):
 	isShot = re.compile(r'layup|jumper|dunk|two point tip shot', re.IGNORECASE)
 	shotPatterns = [[r'layup',r'three point jumper',r'jumper',r'dunk',r'two point tip shot'],
 					['Layup','Three Point Jumper','Jumper','Dunk','Two Point Tip Shot']]
-	homeTeam = {}
-	awayTeam = {}
-	homePbpShots = []
-	awayPbpShots = []
-	homeList = BeautifulSoup(game.text, 'lxml').select('div.team.home ul.playerfilter li')
-	awayList = BeautifulSoup(game.text, 'lxml').select('div.team.away ul.playerfilter li')
-	for player in homeList[1:]:
-		homeTeam[player.select('a')[0].text] = int(player.get('data-playerid'))
-	for player in awayList[1:]:
-		awayTeam[player.select('a')[0].text] = int(player.get('data-playerid'))
 	homePbpShots = awayPbpShots = []
 
 	gamePeriods = pbp.find('ul', class_='css-accordion').find_all('table')
