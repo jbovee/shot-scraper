@@ -21,7 +21,7 @@ def get_teams():
 	teamsPageLink = 'http://www.espn.com/mens-college-basketball/teams'
 	teamsPage = requests.get(teamsPageLink)
 	allTeamsLinks = {}
-	teamLinkPattern = re.compile(r'mens-college-basketball/team/_/id/[0-9]+/[a-z-]+')
+	teamLinkPattern = re.compile(r'mens-college-basketball/team/_/id/([0-9]+)/[a-z-]+')
 	for division in BeautifulSoup(teamsPage.text, 'lxml').find_all('div', class_='mod-teams-list-medium'):
 		divisionName = division.find('div', class_='mod-header').find('h4').text
 		allTeamsLinks[divisionName] = {}
