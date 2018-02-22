@@ -30,6 +30,7 @@ def get_teams():
 			if teamLinkPattern.search(link.get('href')):
 				allTeamsLinks[divisionName][link.text] = {}
 				allTeamsLinks[divisionName][link.text]["teamScheduleLink"] = 'schedule/_'.join(link.get('href').split('_'))
+				allTeamsLinks[divisionName][link.text]["teamId"] = int(teamLinkPattern.search(link.get('href')).group(1))
 				#note: schedule link can have team name at end, but doesn't need it
 	return allTeamsLinks
 
