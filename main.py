@@ -60,8 +60,12 @@ def main():
 	for c in conferences:
 		print(c+":")
 		cur.execute("INSERT INTO conference (name) VALUES ('{}')".format(c))
+		cur.execute("SELECT conferenceID FROM conference WHERE name='{}'".format(c))
+		confID = cur.fetchone()[0]
 		for team in conferences[c]:
 			print("Parsing games for", team)
+			insert = (conferences[c][team]["teamId"],confID,team)
+			cur.execute("INSERT INTO team (teamID, conferenceID, name) VALUES (?,?,?)", insert)
 			#get_team_stats(conferences[c][team]['teamScheduleLink'])
 
 def get_teams():
