@@ -59,6 +59,7 @@ def main():
 	conferences = get_teams()
 	for c in conferences:
 		print(c+":")
+		cur.execute("INSERT INTO conference (name) VALUES ('{}')".format(c))
 		for team in conferences[c]:
 			print("Parsing games for", team)
 			#get_team_stats(conferences[c][team]['teamScheduleLink'])
