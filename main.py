@@ -126,6 +126,9 @@ def parse_game(gameLink):
 		homeTeam[player.select('a')[0].text] = int(player.get('data-playerid'))
 	for player in awayList[1:]:
 		awayTeam[player.select('a')[0].text] = int(player.get('data-playerid'))
+
+	homeID = int(re.search(r'/id/([0-9]+)', BeautifulSoup(gamePage.text, 'lxml').select('div.team.home div.logo a')[0].get('href')).group(1))
+	awayID = int(re.search(r'/id/([0-9]+)', BeautifulSoup(gamePage.text, 'lxml').select('div.team.away div.logo a')[0].get('href')).group(1))
 	shotmap = BeautifulSoup(gamePage.text, 'lxml').find('div', id='gamepackage-shot-chart')
 	playByPlay = BeautifulSoup(gamePage.text, 'lxml').find('div', id='gamepackage-play-by-play')
 	homePbpShots,awayPbpShots = parse_pbp(playByPlay,homeTeam,awayTeam)
