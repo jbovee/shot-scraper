@@ -12,7 +12,7 @@ import progressbar
 #allow for specifying year?
 SECONDS_BETWEEN_REQUESTS = 5
 
-conn = sqlite3.connect('ncaam-shots.db')
+conn = sqlite3.connect('ncaam.db')
 cur = conn.cursor()
 cur.execute("""DROP TABLE IF EXISTS conference""")
 cur.execute("""CREATE TABLE conference
