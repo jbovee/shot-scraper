@@ -151,9 +151,6 @@ def parse_game(gameLink):
 	cur.execute("INSERT INTO game (gameId, homeTeamId, awayTeamId, homeTeamName, awayTeamName, gameLink) VALUES (?,?,?,?,?,?)",(gameId, homeId, awayId, homeName, awayName, gameLink))
 
 	homeTeam = awayTeam = {}
-
-	homeID = int(re.search(r'/id/([0-9]+)', BeautifulSoup(gamePage.text, 'lxml').select('div.team.home div.logo a')[0].get('href')).group(1))
-	awayID = int(re.search(r'/id/([0-9]+)', BeautifulSoup(gamePage.text, 'lxml').select('div.team.away div.logo a')[0].get('href')).group(1))
 	homeTeamLinks = [link.get('href') for link in boxscoreSoup.select('div#gamepackage-boxscore-module div.column-one td.name a')]
 	awayTeamLinks = [link.get('href') for link in boxscoreSoup.select('div#gamepackage-boxscore-module div.column-two td.name a')]
 	widgetsH = ['Getting Home Team: ', progressbar.SimpleProgress()]
