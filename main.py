@@ -175,14 +175,14 @@ def parse_shotmap(shotmap):
 		styles = shot.get('style').split(';')
 		positions = list(filter(coordPattern.match, styles))
 		coord = [float(percent.match(pos).group(1))/10 for pos in positions]
-		shooter = int(shot.get('data-shooter'))
-		homeShotmapShots.append([shooter,coord[0],coord[1]])
+		#shooter = int(shot.get('data-shooter'))
+		homeShotmapShots.append((coord[0],coord[1]))
 	for shot in awayShots:
 		styles = shot.get('style').split(';')
 		positions = list(filter(coordPattern.match, styles))
 		coord = [float(percent.match(pos).group(1))/10 for pos in positions]
-		shooter = int(shot.get('data-shooter'))
-		awayShotmapShots.append([shooter,coord[0],coord[1]])
+		#shooter = int(shot.get('data-shooter'))
+		awayShotmapShots.append((coord[0],coord[1]))
 	return homeShotmapShots,awayShotmapShots
 
 def parse_pbp(pbp,homeTeam,awayTeam):
