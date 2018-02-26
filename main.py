@@ -191,13 +191,18 @@ def parse_pbp(pbp,homeTeam,awayTeam):
 
 	gamePeriods = pbp.find('ul', class_='css-accordion').find_all('table')
 	homeShotIndex = awayShotIndex = 0
+	assistedId = assistedName = None
+	madeBy = re.compile(r'(.+) (made|missed)')
+	assisted = re.compile(r'Assisted by (.+)\.')
 
 	for period in range(len(gamePeriods)):
 		for play in gamePeriods[period].find_all('tr')[1:]: 
 			playText = play.find('td', class_='game-details').text
 			if isShot.search(playText):
 				shotType = None
-				shooter = re.match(r'(.+) (made|missed)', playText).group(1)
+				shooter = madeBy.search(playText).group(1)
+				if assisted.search(playText):
+					assistedName = assisted.search(playText).group(1)
 				for s in range(len(shotPatterns[0])):
 					if re.search(shotPatterns[0][s], playText, re.IGNORECASE):
 						shotType = shotPatterns[1][s]
@@ -209,12 +214,16 @@ def parse_pbp(pbp,homeTeam,awayTeam):
 				if shooter in homeTeam:
 					shotIndex = homeShotIndex
 					score = int(scores.split('-')[1].strip())
-					homePbpShots.append([shotIndex,period+1,minutes,seconds,shooter,shotType,score,made])
+					if assistedName:
+						assistedId = homeTeam[assistedName]
+					homePbpShots.append((homeTeam[shooter],shooter,assistedId,assistedName,period+1,minutes,seconds,shotType,homeShotIndex,made,score))
 					homeShotIndex += 1
 				elif shooter in awayTeam:
 					shotIndex = awayShotIndex
 					score = int(scores.split('-')[0].strip())
-					awayPbpShots.append([shotIndex,period+1,minutes,seconds,shooter,shotType,score,made])
+					if assistedName:
+						assistedId = awayTeam[assistedName]
+					awayPbpShots.append((awayTeam[shooter],shooter,assistedId,assistedName,period+1,minutes,seconds,shotType,awayShotIndex,made,score))
 					awayShotIndex += 1
 
 	#for each play
