@@ -191,20 +191,26 @@ def parse_game(gameLink):
 	if hasPbp and hasShotmap:
 		if len(homePbpShots) == len(homeShotmapShots):
 			homeShots = [(gameId,) + homePbpShots[i] + homeShotmapShots[i] for i in range(len(homePbpShots))]
+			cur.executemany("INSERT INTO shot (gameID, playerID, playerName, assistID, assistName, gamePeriod, gameMinutes, gameSeconds, type, shotNumber, made, teamScore, xPos, yPos) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
 							homeShots)
 		else:
 			print("Home shot counts DON'T match",gameLink)
 		if len(awayPbpShots) == len(awayShotmapShots):
 			awayShots = [(gameId,) + awayPbpShots[i] + awayShotmapShots[i] for i in range(len(awayPbpShots))]
+			cur.executemany("INSERT INTO shot (gameID, playerID, playerName, assistID, assistName, gamePeriod, gameMinutes, gameSeconds, type, shotNumber, made, teamScore, xPos, yPos) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
 							awayShots)
 		else:
 			print("Away shot counts DON'T match", gameLink)
 	elif hasPbp:
 		homeShots = [(gameId,) + shot for shot in homePbpShots]
+		cur.executemany("INSERT INTO shot (gameID, playerID, playerName, assistID, assistName, gamePeriod, gameMinutes, gameSeconds, type, shotNumber, made, teamScore) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)", homeShots)
 		awayShots = [(gameId,) + shot for shot in awayPbpShots]
+		cur.executemany("INSERT INTO shot (gameID, playerID, playerName, assistID, assistName, gamePeriod, gameMinutes, gameSeconds, type, shotNumber, made, teamScore) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)", awayShots)
 	elif hasShotmap:
 		homeShots = [(gameId,) + shot for shot in homeShotmapShots]
+		cur.execute("INSERT INTO shot (gameID, xPos, yPos) VALUES (?,?,?)", homeShots)
 		awayshots = [(gameId,) + shot for shot in awayShotmapShots]
+		cur.execute("INSERT INTO shot (gameID, xPos, yPos) VALUES (?,?,?)", awayShots)
 	else:
 		print("Game page has no shotmap or play-by-play")
 
