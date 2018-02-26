@@ -119,6 +119,10 @@ def get_games(teamScheduleLink):
 def parse_game(gameLink):
 	#parse a given game
 	gameId = int(re.search(r'gameId=([0-9]+)',gameLink).group(1))
+	boxscoreLink = 'http://www.espn.com/mens-college-basketball/boxscore?gameId={}'.format(gameId)
+	time.sleep(SECONDS_BETWEEN_REQUESTS)
+	boxscorePage = requests.get(boxscoreLink)
+	boxscoreSoup = BeautifulSoup(boxscorePage.text, 'lxml')
 	time.sleep(SECONDS_BETWEEN_REQUESTS)
 	gamePage = requests.get(gameLink)
 	soupPage = BeautifulSoup(gamePage.text, 'lxml')
@@ -146,15 +150,32 @@ def parse_game(gameLink):
 	cur.execute("INSERT INTO game (gameId, homeTeamId, awayTeamId, homeTeamName, awayTeamName, gameLink) VALUES (?,?,?,?,?,?)",(gameId, homeId, awayId, homeName, awayName, gameLink))
 
 	homeTeam = awayTeam = {}
-	homeList = BeautifulSoup(gamePage.text, 'lxml').select('div.team.home ul.playerfilter li')
-	awayList = BeautifulSoup(gamePage.text, 'lxml').select('div.team.away ul.playerfilter li')
-	for player in homeList[1:]:
-		homeTeam[player.select('a')[0].text] = int(player.get('data-playerid'))
-	for player in awayList[1:]:
-		awayTeam[player.select('a')[0].text] = int(player.get('data-playerid'))
 
 	homeID = int(re.search(r'/id/([0-9]+)', BeautifulSoup(gamePage.text, 'lxml').select('div.team.home div.logo a')[0].get('href')).group(1))
 	awayID = int(re.search(r'/id/([0-9]+)', BeautifulSoup(gamePage.text, 'lxml').select('div.team.away div.logo a')[0].get('href')).group(1))
+	homeTeamLinks = [link.get('href') for link in boxscoreSoup.select('div#gamepackage-boxscore-module div.column-one td.name a')]
+	awayTeamLinks = [link.get('href') for link in boxscoreSoup.select('div#gamepackage-boxscore-module div.column-two td.name a')]
+	for link in homeTeamLinks:
+		time.sleep(SECONDS_BETWEEN_REQUESTS)
+		playerPage = requests.get(link)
+		playerName = BeautifulSoup(playerPage.text, 'lxml').select('div.mod-content h1')[0].text
+		playerId = int(re.search(r'id/([0-9]+)', link).group(1))
+		homeTeam[playerName] = playerId
+		cur.execute("SELECT playerID FROM player WHERE playerID=?", (playerId,))
+		playerExists = cur.fetchone()
+		if not playerExists:
+			cur.execute("INSERT INTO player (playerID, playerName, teamID) VALUES (?,?,?)",(playerId, playerName, homeId))
+	for link in awayTeamLinks:
+		time.sleep(SECONDS_BETWEEN_REQUESTS)
+		playerPage = requests.get(link)
+		playerName = BeautifulSoup(playerPage.text, 'lxml').select('div.mod-content h1')[0].text
+		playerId = int(re.search(r'id/([0-9]+)', link).group(1))
+		awayTeam[playerName] = playerId
+		cur.execute("SELECT playerID FROM player WHERE playerID=?", (playerId,))
+		playerExists = cur.fetchone()
+		if not playerExists:
+			cur.execute("INSERT INTO player (playerID, playerName, teamID) VALUES (?,?,?)",(playerId, playerName, awayId))
+
 	shotmap = BeautifulSoup(gamePage.text, 'lxml').find('div', id='gamepackage-shot-chart')
 	playByPlay = BeautifulSoup(gamePage.text, 'lxml').find('div', id='gamepackage-play-by-play')
 	homePbpShots,awayPbpShots = parse_pbp(playByPlay,homeTeam,awayTeam)
