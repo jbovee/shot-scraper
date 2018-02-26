@@ -180,21 +180,33 @@ def parse_game(gameLink):
 
 	shotmap = BeautifulSoup(gamePage.text, 'lxml').find('div', id='gamepackage-shot-chart')
 	playByPlay = BeautifulSoup(gamePage.text, 'lxml').find('div', id='gamepackage-play-by-play')
-	homePbpShots,awayPbpShots = parse_pbp(playByPlay,homeTeam,awayTeam)
-	homeShotmapShots,awayShotmapShots = parse_shotmap(shotmap)
-	if len(homePbpShots) == len(homeShotmapShots):
-		#go through each shot, adding to database table
-		print("Home shot counts match")
+	hasPbp = True if playByPlay.text.strip() else False
+	hasShotmap = True if shotmap.text.strip() else False
+	homePbpShots = awayPbpShots = homeShotmapShots = awayShotmapShots = None
+	if hasPbp:
+		homePbpShots,awayPbpShots = parse_pbp(playByPlay,homeTeam,awayTeam)
+	if hasShotmap:
+		homeShotmapShots,awayShotmapShots = parse_shotmap(shotmap)
+
+	if hasPbp and hasShotmap:
+		if len(homePbpShots) == len(homeShotmapShots):
+			homeShots = [(gameId,) + homePbpShots[i] + homeShotmapShots[i] for i in range(len(homePbpShots))]
+							homeShots)
+		else:
+			print("Home shot counts DON'T match",gameLink)
+		if len(awayPbpShots) == len(awayShotmapShots):
+			awayShots = [(gameId,) + awayPbpShots[i] + awayShotmapShots[i] for i in range(len(awayPbpShots))]
+							awayShots)
+		else:
+			print("Away shot counts DON'T match", gameLink)
+	elif hasPbp:
+		homeShots = [(gameId,) + shot for shot in homePbpShots]
+		awayShots = [(gameId,) + shot for shot in awayPbpShots]
+	elif hasShotmap:
+		homeShots = [(gameId,) + shot for shot in homeShotmapShots]
+		awayshots = [(gameId,) + shot for shot in awayShotmapShots]
 	else:
-		print("Home shot counts DON'T match, ",gameLink)
-		print(homePbpShots)
-		print(homeShotmapShots)
-	if len(awayPbpShots) == len(awayShotmapShots):
-		print("Away shot counts match")
-	else:
-		print("Away shot counts DON'T match, ",gameLink)
-		print(awayPbpShots)
-		print(awayShotmapShots)
+		print("Game page has no shotmap or play-by-play")
 
 def parse_shotmap(shotmap):
 	#parse a shotmap on the play-by-play page for a game
