@@ -15,7 +15,9 @@ conn = sqlite3.connect('testing.db')
 cur = conn.cursor()
 cur.execute("""DROP TABLE IF EXISTS conference""")
 cur.execute("""CREATE TABLE conference
-			(conferenceID INTEGER PRIMARY KEY NOT NULL, name TEXT)""")
+			(conferenceID INTEGER PRIMARY KEY NOT NULL,
+			name TEXT)""")
+cur.execute("INSERT INTO conference (name) VALUES (?)",("Other",))
 
 cur.execute("""DROP TABLE IF EXISTS team""")
 cur.execute("""CREATE TABLE team
@@ -27,14 +29,17 @@ cur.execute("""CREATE TABLE team
 cur.execute("""DROP TABLE IF EXISTS player""")
 cur.execute("""CREATE TABLE player
 			(playerID INTEGER PRIMARY KEY NOT NULL,
+			playerName TEXT,
 			teamID INTEGER NOT NULL,
 			FOREIGN KEY (teamID) REFERENCES team(teamID))""")
 
 cur.execute("""DROP TABLE IF EXISTS game""")
 cur.execute("""CREATE TABLE game
 			(gameID INTEGER PRIMARY KEY NOT NULL,
-			homeTeamID INTEGER NOT NULL,
-			awayTeamId INTEGER NOT NULL,
+			homeTeamID INTEGER,
+			awayTeamId INTEGER,
+			homeTeamName TEXT,
+			awayTeamName TEXT,
 			gameLink TEXT,
 			FOREIGN KEY (homeTeamID) REFERENCES team(teamID),
 			FOREIGN KEY (awayTeamID) REFERENCES team(teamID))""")
@@ -43,9 +48,13 @@ cur.execute("""DROP TABLE IF EXISTS shot""")
 cur.execute("""CREATE TABLE shot
 			(shotID INTEGER PRIMARY KEY NOT NULL,
 			gameID INTEGER NOT NULL,
-			playerID INTEGER NOT NULL,
-			shotMinutes INTEGER,
-			shotSeconds INTEGER,
+			playerID INTEGER,
+			playerName TEXT,
+			assistID INTEGER,
+			assistName TEXT,
+			gamePeriod INTEGER,
+			gameMinutes INTEGER,
+			gameSeconds INTEGER,
 			type TEXT,
 			shotNumber INTEGER,
 			made INTEGER,
