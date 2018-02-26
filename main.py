@@ -128,6 +128,18 @@ def parse_game(gameLink):
 	gameId = int(re.search(r'gameId=([0-9]+)',gameLink).group(1))
 	time.sleep(SECONDS_BETWEEN_REQUESTS)
 	gamePage = requests.get(gameLink)
+	soupPage = BeautifulSoup(gamePage.text, 'lxml')
+	scripts = soupPage.find_all('script', type='text/javascript')
+	homeId = awayId = None
+	homeIdPattern = re.compile(r'espn\.gamepackage\.homeTeamId = "([0-9]+)"')
+	awayIdPattern = re.compile(r'espn\.gamepackage\.awayTeamId = "([0-9]+)"')
+	for script in scripts:
+		homeIdCheck = homeIdPattern.search(script.text)
+		if homeIdCheck:
+			homeId = int(homeIdCheck.group(1))
+		awayIdCheck = awayIdPattern.search(script.text)
+		if awayIdCheck:
+			awayId = int(awayIdCheck.group(1))
 	homeTeam = awayTeam = {}
 	homeList = BeautifulSoup(gamePage.text, 'lxml').select('div.team.home ul.playerfilter li')
 	awayList = BeautifulSoup(gamePage.text, 'lxml').select('div.team.away ul.playerfilter li')
