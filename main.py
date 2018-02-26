@@ -226,7 +226,7 @@ def parse_pbp(pbp,homeTeam,awayTeam):
 					awayPbpShots.append((awayTeam[shooter],shooter,assistedId,assistedName,period+1,minutes,seconds,shotType,awayShotIndex,made,score))
 					awayShotIndex += 1
 
-	return homePbpShots, awayPbpShots
+	return homePbpShots,awayPbpShots
 
 if __name__ == "__main__":
 	main()
