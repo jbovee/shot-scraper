@@ -68,12 +68,12 @@ cur.execute("""CREATE TABLE shot
 def main():
 	conferences = get_teams()
 	for c in conferences:
-		print(c+":")
+		print("{}:".format(c))
 		cur.execute("INSERT INTO conference (name) VALUES (?)",(c,))
 		cur.execute("SELECT conferenceID FROM conference WHERE name=?",(c,))
 		confId = cur.fetchone()[0]
 		for team in conferences[c]:
-			print("Parsing games for", team)
+			print("Parsing games for {}".format(team))
 			insert = (conferences[c][team]["teamId"],confId,team)
 			cur.execute("INSERT INTO team (teamID, conferenceID, name) VALUES (?,?,?)", insert)
 			get_team_stats(conferences[c][team]['teamScheduleLink'])
@@ -194,13 +194,13 @@ def parse_game(gameLink):
 			cur.executemany("INSERT INTO shot (gameID, playerID, playerName, assistID, assistName, gamePeriod, gameMinutes, gameSeconds, type, shotNumber, made, teamScore, xPos, yPos) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
 							homeShots)
 		else:
-			print("Home shot counts DON'T match",gameLink)
+			print("Home shot counts DON'T match for game: {}".format(gameLink))
 		if len(awayPbpShots) == len(awayShotmapShots):
 			awayShots = [(gameId,) + awayPbpShots[i] + awayShotmapShots[i] for i in range(len(awayPbpShots))]
 			cur.executemany("INSERT INTO shot (gameID, playerID, playerName, assistID, assistName, gamePeriod, gameMinutes, gameSeconds, type, shotNumber, made, teamScore, xPos, yPos) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
 							awayShots)
 		else:
-			print("Away shot counts DON'T match", gameLink)
+			print("Away shot counts DON'T match for game: {}".format(gameLink))
 	elif hasPbp:
 		homeShots = [(gameId,) + shot for shot in homePbpShots]
 		cur.executemany("INSERT INTO shot (gameID, playerID, playerName, assistID, assistName, gamePeriod, gameMinutes, gameSeconds, type, shotNumber, made, teamScore) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)", homeShots)
