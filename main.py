@@ -7,6 +7,7 @@ import re
 import json
 import time
 import sqlite3
+import progressbar
 
 #allow for specifying year?
 SECONDS_BETWEEN_REQUESTS = 5
@@ -155,7 +156,11 @@ def parse_game(gameLink):
 	awayID = int(re.search(r'/id/([0-9]+)', BeautifulSoup(gamePage.text, 'lxml').select('div.team.away div.logo a')[0].get('href')).group(1))
 	homeTeamLinks = [link.get('href') for link in boxscoreSoup.select('div#gamepackage-boxscore-module div.column-one td.name a')]
 	awayTeamLinks = [link.get('href') for link in boxscoreSoup.select('div#gamepackage-boxscore-module div.column-two td.name a')]
-	for link in homeTeamLinks:
+	widgetsH = ['Getting Home Team: ', progressbar.SimpleProgress()]
+	widgetsA = ['Getting Away Team: ', progressbar.SimpleProgress()]
+	barH = progressbar.ProgressBar(widgets=widgetsH)
+	barA = progressbar.ProgressBar(widgets=widgetsA)
+	for link in barH(homeTeamLinks):
 		time.sleep(SECONDS_BETWEEN_REQUESTS)
 		playerPage = requests.get(link)
 		playerName = BeautifulSoup(playerPage.text, 'lxml').select('div.mod-content h1')[0].text
@@ -165,7 +170,7 @@ def parse_game(gameLink):
 		playerExists = cur.fetchone()
 		if not playerExists:
 			cur.execute("INSERT INTO player (playerID, playerName, teamID) VALUES (?,?,?)",(playerId, playerName, homeId))
-	for link in awayTeamLinks:
+	for link in barA(awayTeamLinks):
 		time.sleep(SECONDS_BETWEEN_REQUESTS)
 		playerPage = requests.get(link)
 		playerName = BeautifulSoup(playerPage.text, 'lxml').select('div.mod-content h1')[0].text
