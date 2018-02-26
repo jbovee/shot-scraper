@@ -76,7 +76,7 @@ def main():
 			print("Parsing games for", team)
 			insert = (conferences[c][team]["teamId"],confId,team)
 			cur.execute("INSERT INTO team (teamID, conferenceID, name) VALUES (?,?,?)", insert)
-			#get_team_stats(conferences[c][team]['teamScheduleLink'])
+			get_team_stats(conferences[c][team]['teamScheduleLink'])
 
 def get_teams():
 	#return list of each team and link to their page on ESPN
