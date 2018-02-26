@@ -133,6 +133,18 @@ def parse_game(gameLink):
 		awayIdCheck = awayIdPattern.search(script.text)
 		if awayIdCheck:
 			awayId = int(awayIdCheck.group(1))
+	homeName = soupPage.select('div.team.home div.team-info-wrapper span.long-name')[0].text
+	awayName = soupPage.select('div.team.away div.team-info-wrapper span.long-name')[0].text
+	cur.execute("SELECT teamID FROM team WHERE teamID=?", (homeId,))
+	homeExists = cur.fetchone()
+	if not homeExists:
+		cur.execute("INSERT INTO team (teamID, conferenceID, name) VALUES (?,?,?)", (homeId, 1, homeName))
+	cur.execute("SELECT teamID FROM team WHERE teamID=?", (awayId,))
+	awayExists = cur.fetchone()
+	if not awayExists:
+		cur.execute("INSERT INTO team (teamID, conferenceID, name) VALUES (?,?,?)", (awayId, 1, awayName))
+	cur.execute("INSERT INTO game (gameId, homeTeamId, awayTeamId, homeTeamName, awayTeamName, gameLink) VALUES (?,?,?,?,?,?)",(gameId, homeId, awayId, homeName, awayName, gameLink))
+
 	homeTeam = awayTeam = {}
 	homeList = BeautifulSoup(gamePage.text, 'lxml').select('div.team.home ul.playerfilter li')
 	awayList = BeautifulSoup(gamePage.text, 'lxml').select('div.team.away ul.playerfilter li')
