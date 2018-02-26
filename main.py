@@ -226,16 +226,6 @@ def parse_pbp(pbp,homeTeam,awayTeam):
 					awayPbpShots.append((awayTeam[shooter],shooter,assistedId,assistedName,period+1,minutes,seconds,shotType,awayShotIndex,made,score))
 					awayShotIndex += 1
 
-	#for each play
-	#	check if is a shot
-	#		typically has words 'made', 'makes', 'missed', 'misses'
-	#		has type of shot ('jumper', 'three point jumper', 'layup', 'dunk', etc)
-	#		made shots always have 'scoring-play' class (free throws do too though. either filter out or also collect)
-	#	store index as 'shot#' to pair with shot map
-	#	get player name
-	#	time of shot?
-	#	check for assists, and by who?
-	#	team score after shot?
 	return homePbpShots, awayPbpShots
 
 if __name__ == "__main__":
