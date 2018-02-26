@@ -207,7 +207,7 @@ def parse_pbp(pbp,homeTeam,awayTeam):
 					if re.search(shotPatterns[0][s], playText, re.IGNORECASE):
 						shotType = shotPatterns[1][s]
 						break
-				made = True if play.get('class') else False
+				made = 1 if play.get('class') else 0
 				time = play.find('td', class_='time-stamp').text
 				minutes,seconds = int(time.split(':')[0]),int(time.split(':')[1])
 				scores = play.find('td', class_='combined-score').text
