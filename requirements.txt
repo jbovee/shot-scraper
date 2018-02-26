@@ -1,0 +1,5 @@
+lxml
+bs4
+requests
+progressbar2
+flask
