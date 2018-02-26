@@ -118,13 +118,6 @@ def get_games(teamScheduleLink):
 
 def parse_game(gameLink):
 	#parse a given game
-	#return a JSON element containing shot info for each player
-	#include players who didn't take shots
-	#list of all players can be found in button dropdown
-	#<div class="team away/home">
-	#	<div data-behavior="button_dropdown">
-	#		<ul class="playerfilter">
-	#			<li>...
 	gameId = int(re.search(r'gameId=([0-9]+)',gameLink).group(1))
 	time.sleep(SECONDS_BETWEEN_REQUESTS)
 	gamePage = requests.get(gameLink)
