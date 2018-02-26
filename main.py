@@ -102,7 +102,7 @@ def get_team_stats(teamScheduleLink):
 	#wont have court location info
 	games = get_games(teamScheduleLink)
 	for g in range(len(games)):
-		print("Parsing game",g,"of",len(games))
+		print("Parsing game {} of {}".format(g+1,len(games)+1))
 		parse_game(games[g])
 
 def get_games(teamScheduleLink):
