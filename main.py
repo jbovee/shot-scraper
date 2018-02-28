@@ -152,7 +152,10 @@ def parse_game(gameLink):
 	awayExists = cur.fetchone()
 	if not awayExists:
 		cur.execute("INSERT INTO team (teamID, conferenceID, name) VALUES (?,?,?)", (awayId, 1, awayName))
-	cur.execute("INSERT INTO game (gameId, homeTeamId, awayTeamId, homeTeamName, awayTeamName, gameLink) VALUES (?,?,?,?,?,?)",(gameId, homeId, awayId, homeName, awayName, gameLink))
+	cur.execute("SELECT gameID FROM game WHERE gameID=?", (gameId,))
+	gameExists = cur.fetchone()
+	if not awayExists:
+		cur.execute("INSERT INTO game (gameId, homeTeamId, awayTeamId, homeTeamName, awayTeamName, gameLink) VALUES (?,?,?,?,?,?)",(gameId, homeId, awayId, homeName, awayName, gameLink))
 
 	homeTeam = awayTeam = {}
 	homeTeamLinks = [link.get('href') for link in boxscoreSoup.select('div#gamepackage-boxscore-module div.column-one td.name a')]
