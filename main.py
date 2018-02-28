@@ -1,4 +1,5 @@
 from bs4 import BeautifulSoup
+from fuzzywuzzy import fuzz, process
 import requests
 import lxml
 import sys
@@ -273,14 +274,18 @@ def parse_pbp(pbp,homeTeam,awayTeam):
 					shotIndex = homeShotIndex
 					score = int(scores.split('-')[1].strip())
 					if assistedName:
+						assistedName = process.extractOne(assistedName, homeTeam.keys(), scorer=fuzz.ratio)
 						assistedId = homeTeam[assistedName]
+					shooter = process.extractOne(shooter, homeTeam.keys(), scorer=fuzz.ratio)
 					homePbpShots.append((homeTeam[shooter],shooter,assistedId,assistedName,period+1,minutes,seconds,shotType,homeShotIndex,made,score))
 					homeShotIndex += 1
 				elif shooter in awayTeam:
 					shotIndex = awayShotIndex
 					score = int(scores.split('-')[0].strip())
 					if assistedName:
+						assistedName = process.extractOne(assistedName, awayTeam.keys(), scorer=fuzz.ratio)
 						assistedId = awayTeam[assistedName]
+					shooter = process.extractOne(shooter, awayTeam.keys(), scorer=fuzz.ratio)
 					awayPbpShots.append((awayTeam[shooter],shooter,assistedId,assistedName,period+1,minutes,seconds,shotType,awayShotIndex,made,score))
 					awayShotIndex += 1
 
