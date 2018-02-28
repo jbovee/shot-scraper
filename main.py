@@ -76,7 +76,10 @@ def main():
 		for team in conferences[c]:
 			print("Parsing games for {}".format(team), flush=True)
 			insert = (conferences[c][team]["teamId"],confId,team)
-			cur.execute("INSERT INTO team (teamID, conferenceID, name) VALUES (?,?,?)", insert)
+			cur.execute("SELECT teamID FROM team WHERE teamID=?", (conferences[c][team]["teamId"],))
+			teamExists = cur.fetchone()
+			if not teamExists:
+				cur.execute("INSERT INTO team (teamID, conferenceID, name) VALUES (?,?,?)", insert)
 			get_team_stats(conferences[c][team]['teamScheduleLink'])
 
 def get_teams():
