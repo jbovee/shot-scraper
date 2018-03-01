@@ -277,27 +277,27 @@ def parse_pbp(pbp,homeTeam,awayTeam):
 				time = play.find('td', class_='time-stamp').text
 				minutes,seconds = int(time.split(':')[0]),int(time.split(':')[1])
 				scores = play.find('td', class_='combined-score').text
-				if shooter in homeTeam:
+				if shooterName in homeTeam:
 					shotIndex = homeShotIndex
 					score = int(scores.split('-')[1].strip())
 					if shooterName:
-						shooterName = process.extractOne(shooter, homeTeam.keys(), scorer=fuzz.ratio)[0]
+						shooterName = process.extractOne(shooterName, homeTeam.keys(), scorer=fuzz.ratio)[0]
 						shooterId = homeTeam[shooterName]
 					if assistedName:
 						assistedName = process.extractOne(assistedName, homeTeam.keys(), scorer=fuzz.ratio)[0]
 						assistedId = homeTeam[assistedName]
-					homePbpShots.append((homeTeam[shooter],shooter,assistedId,assistedName,period+1,minutes,seconds,shotType,homeShotIndex,made,score))
+					homePbpShots.append((shooterId,shooterName,assistedId,assistedName,period+1,minutes,seconds,shotType,homeShotIndex,made,score))
 					homeShotIndex += 1
-				elif shooter in awayTeam:
+				elif shooterName in awayTeam:
 					shotIndex = awayShotIndex
 					score = int(scores.split('-')[0].strip())
 					if shooterName:
-						shooterName = process.extractOne(shooter, awayTeam.keys(), scorer=fuzz.ratio)[0]
+						shooterName = process.extractOne(shooterName, awayTeam.keys(), scorer=fuzz.ratio)[0]
 						shooterId = awayTeam[shooterName]
 					if assistedName:
 						assistedName = process.extractOne(assistedName, awayTeam.keys(), scorer=fuzz.ratio)[0]
 						assistedId = awayTeam[assistedName]
-					awayPbpShots.append((awayTeam[shooter],shooter,assistedId,assistedName,period+1,minutes,seconds,shotType,awayShotIndex,made,score))
+					awayPbpShots.append((shooterId,shooterName,assistedId,assistedName,period+1,minutes,seconds,shotType,awayShotIndex,made,score))
 					awayShotIndex += 1
 
 	return homePbpShots,awayPbpShots
