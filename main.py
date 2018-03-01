@@ -256,7 +256,7 @@ def parse_pbp(pbp,homeTeam,awayTeam):
 
 	gamePeriods = pbp.find('ul', class_='css-accordion').find_all('table')
 	homeShotIndex = awayShotIndex = 0
-	assistedId = assistedName = None
+	shooterId = shooterName = assistedId = assistedName = None
 	madeBy = re.compile(r'(.+) (made|missed)')
 	assisted = re.compile(r'Assisted by (.+)\.')
 
@@ -265,7 +265,8 @@ def parse_pbp(pbp,homeTeam,awayTeam):
 			playText = play.find('td', class_='game-details').text
 			if isShot.search(playText):
 				shotType = None
-				shooter = madeBy.search(playText).group(1)
+				if madeBy.search(playText):
+					shooterName = madeBy.search(playText).group(1)
 				if assisted.search(playText):
 					assistedName = assisted.search(playText).group(1)
 				for s in range(len(shotPatterns[0])):
@@ -279,19 +280,23 @@ def parse_pbp(pbp,homeTeam,awayTeam):
 				if shooter in homeTeam:
 					shotIndex = homeShotIndex
 					score = int(scores.split('-')[1].strip())
+					if shooterName:
+						shooterName = process.extractOne(shooter, homeTeam.keys(), scorer=fuzz.ratio)[0]
+						shooterId = homeTeam[shooterName]
 					if assistedName:
 						assistedName = process.extractOne(assistedName, homeTeam.keys(), scorer=fuzz.ratio)[0]
 						assistedId = homeTeam[assistedName]
-					shooter = process.extractOne(shooter, homeTeam.keys(), scorer=fuzz.ratio)[0]
 					homePbpShots.append((homeTeam[shooter],shooter,assistedId,assistedName,period+1,minutes,seconds,shotType,homeShotIndex,made,score))
 					homeShotIndex += 1
 				elif shooter in awayTeam:
 					shotIndex = awayShotIndex
 					score = int(scores.split('-')[0].strip())
+					if shooterName:
+						shooterName = process.extractOne(shooter, awayTeam.keys(), scorer=fuzz.ratio)[0]
+						shooterId = awayTeam[shooterName]
 					if assistedName:
 						assistedName = process.extractOne(assistedName, awayTeam.keys(), scorer=fuzz.ratio)[0]
 						assistedId = awayTeam[assistedName]
-					shooter = process.extractOne(shooter, awayTeam.keys(), scorer=fuzz.ratio)[0]
 					awayPbpShots.append((awayTeam[shooter],shooter,assistedId,assistedName,period+1,minutes,seconds,shotType,awayShotIndex,made,score))
 					awayShotIndex += 1
 
