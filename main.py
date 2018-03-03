@@ -69,12 +69,12 @@ cur.execute("""CREATE TABLE shot
 def main():
 	conferences = get_teams()
 	for c in conferences:
-		print("{}:".format(c), flush=True)
+		print("\n=========== {} ===========".format(c), flush=True)
 		cur.execute("INSERT INTO conference (name) VALUES (?)",(c,))
 		cur.execute("SELECT conferenceID FROM conference WHERE name=?",(c,))
 		confId = cur.fetchone()[0]
 		for team in conferences[c]:
-			print("Parsing games for {}".format(team), flush=True)
+			print("\n----------- {} -----------".format(team), flush=True)
 			insert = (conferences[c][team]["teamId"],confId,team)
 			cur.execute("SELECT teamID FROM team WHERE teamID=?", (conferences[c][team]["teamId"],))
 			teamExists = cur.fetchone()
