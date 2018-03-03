@@ -16,9 +16,12 @@ SECONDS_BETWEEN_REQUESTS = 5
 def main():
 	init_database()
 	conferences = get_teams()
+	conn = sqlite3.connect('ncaam.db')
+	cur = conn.cursor()
 	for c in conferences:
 		print("\n=========== {} ===========".format(c), flush=True)
 		cur.execute("INSERT INTO conference (name) VALUES (?)",(c,))
+		conn.commit()
 		cur.execute("SELECT conferenceID FROM conference WHERE name=?",(c,))
 		confId = cur.fetchone()[0]
 		for team in conferences[c]:
@@ -28,7 +31,9 @@ def main():
 			teamExists = cur.fetchone()
 			if not teamExists:
 				cur.execute("INSERT INTO team (teamID, conferenceID, name) VALUES (?,?,?)", insert)
+				conn.commit()
 			get_team_stats(conferences[c][team]['teamScheduleLink'])
+	conn.close()
 
 def init_database():
 	conn = sqlite3.connect('ncaam.db')
@@ -84,7 +89,7 @@ def init_database():
 				FOREIGN KEY (gameID) REFERENCES game(gameID),
 				FOREIGN KEY (playerID) REFERENCES player(playerID))""")
 
-	cur.commit()
+	conn.commit()
 	cur.close()
 
 def get_teams():
@@ -128,6 +133,8 @@ def get_games(teamScheduleLink):
 
 def parse_game(gameLink):
 	#parse a given game
+	conn = sqlite3.connect('ncaam.db')
+	cur = conn.cursor()
 	gameId = int(re.search(r'gameId=([0-9]+)',gameLink).group(1))
 	boxscoreLink = 'http://www.espn.com/mens-college-basketball/boxscore?gameId={}'.format(gameId)
 	time.sleep(SECONDS_BETWEEN_REQUESTS)
@@ -161,6 +168,7 @@ def parse_game(gameLink):
 	gameExists = cur.fetchone()
 	if not awayExists:
 		cur.execute("INSERT INTO game (gameId, homeTeamId, awayTeamId, homeTeamName, awayTeamName, gameLink) VALUES (?,?,?,?,?,?)",(gameId, homeId, awayId, homeName, awayName, gameLink))
+	conn.commit()
 
 	homeTeam = awayTeam = {}
 	homeTeamLinks = [link.get('href') for link in boxscoreSoup.select('div#gamepackage-boxscore-module div.column-one td.name a')]
@@ -189,6 +197,7 @@ def parse_game(gameLink):
 		playerExists = cur.fetchone()
 		if not playerExists:
 			cur.execute("INSERT INTO player (playerID, playerName, teamID) VALUES (?,?,?)",(playerId, playerName, awayId))
+	conn.commit()
 
 	shotmap = BeautifulSoup(gamePage.text, 'lxml').find('div', id='gamepackage-shot-chart')
 	playByPlay = BeautifulSoup(gamePage.text, 'lxml').find('div', id='gamepackage-play-by-play')
@@ -205,12 +214,14 @@ def parse_game(gameLink):
 			homeShots = [(gameId,) + homePbpShots[i] + homeShotmapShots[i] for i in range(len(homePbpShots))]
 			cur.executemany("INSERT INTO shot (gameID, playerID, playerName, assistID, assistName, gamePeriod, gameMinutes, gameSeconds, type, shotNumber, made, teamScore, xPos, yPos) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
 							homeShots)
+			conn.commit()
 		else:
 			print("Home shot counts DON'T match for game: {}".format(gameLink), flush=True)
 		if len(awayPbpShots) == len(awayShotmapShots):
 			awayShots = [(gameId,) + awayPbpShots[i] + awayShotmapShots[i] for i in range(len(awayPbpShots))]
 			cur.executemany("INSERT INTO shot (gameID, playerID, playerName, assistID, assistName, gamePeriod, gameMinutes, gameSeconds, type, shotNumber, made, teamScore, xPos, yPos) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
 							awayShots)
+			conn.commit()
 		else:
 			print("Away shot counts DON'T match for game: {}".format(gameLink), flush=True)
 	elif hasPbp:
@@ -218,13 +229,17 @@ def parse_game(gameLink):
 		cur.executemany("INSERT INTO shot (gameID, playerID, playerName, assistID, assistName, gamePeriod, gameMinutes, gameSeconds, type, shotNumber, made, teamScore) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)", homeShots)
 		awayShots = [(gameId,) + shot for shot in awayPbpShots]
 		cur.executemany("INSERT INTO shot (gameID, playerID, playerName, assistID, assistName, gamePeriod, gameMinutes, gameSeconds, type, shotNumber, made, teamScore) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)", awayShots)
+		conn.commit()
 	elif hasShotmap:
 		homeShots = [(gameId,) + shot for shot in homeShotmapShots]
 		cur.execute("INSERT INTO shot (gameID, xPos, yPos) VALUES (?,?,?)", homeShots)
 		awayshots = [(gameId,) + shot for shot in awayShotmapShots]
 		cur.execute("INSERT INTO shot (gameID, xPos, yPos) VALUES (?,?,?)", awayShots)
+		conn.commit()
 	else:
 		print("Game page has no shotmap or play-by-play", flush=True)
+
+	conn.close()
 
 def parse_shotmap(shotmap):
 	#parse a shotmap on the play-by-play page for a game
