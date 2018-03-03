@@ -13,60 +13,8 @@ import progressbar
 #allow for specifying year?
 SECONDS_BETWEEN_REQUESTS = 5
 
-conn = sqlite3.connect('ncaam.db')
-cur = conn.cursor()
-cur.execute("""DROP TABLE IF EXISTS conference""")
-cur.execute("""CREATE TABLE conference
-			(conferenceID INTEGER PRIMARY KEY NOT NULL,
-			name TEXT)""")
-cur.execute("INSERT INTO conference (name) VALUES (?)",("Other",))
-
-cur.execute("""DROP TABLE IF EXISTS team""")
-cur.execute("""CREATE TABLE team
-			(teamID INTEGER PRIMARY KEY NOT NULL,
-			conferenceID INTEGER NOT NULL,
-			name TEXT,
-			FOREIGN KEY (conferenceID) REFERENCES conference(conferenceID))""")
-
-cur.execute("""DROP TABLE IF EXISTS player""")
-cur.execute("""CREATE TABLE player
-			(playerID INTEGER PRIMARY KEY NOT NULL,
-			playerName TEXT,
-			teamID INTEGER NOT NULL,
-			FOREIGN KEY (teamID) REFERENCES team(teamID))""")
-
-cur.execute("""DROP TABLE IF EXISTS game""")
-cur.execute("""CREATE TABLE game
-			(gameID INTEGER PRIMARY KEY NOT NULL,
-			homeTeamID INTEGER,
-			awayTeamId INTEGER,
-			homeTeamName TEXT,
-			awayTeamName TEXT,
-			gameLink TEXT,
-			FOREIGN KEY (homeTeamID) REFERENCES team(teamID),
-			FOREIGN KEY (awayTeamID) REFERENCES team(teamID))""")
-
-cur.execute("""DROP TABLE IF EXISTS shot""")
-cur.execute("""CREATE TABLE shot
-			(shotID INTEGER PRIMARY KEY NOT NULL,
-			gameID INTEGER NOT NULL,
-			playerID INTEGER,
-			playerName TEXT,
-			assistID INTEGER,
-			assistName TEXT,
-			gamePeriod INTEGER,
-			gameMinutes INTEGER,
-			gameSeconds INTEGER,
-			type TEXT,
-			shotNumber INTEGER,
-			made INTEGER,
-			teamScore INTEGER,
-			xPos REAL,
-			yPos REAL,
-			FOREIGN KEY (gameID) REFERENCES game(gameID),
-			FOREIGN KEY (playerID) REFERENCES player(playerID))""")
-
 def main():
+	init_database()
 	conferences = get_teams()
 	for c in conferences:
 		print("\n=========== {} ===========".format(c), flush=True)
@@ -81,6 +29,63 @@ def main():
 			if not teamExists:
 				cur.execute("INSERT INTO team (teamID, conferenceID, name) VALUES (?,?,?)", insert)
 			get_team_stats(conferences[c][team]['teamScheduleLink'])
+
+def init_database():
+	conn = sqlite3.connect('ncaam.db')
+	cur = conn.cursor()
+	cur.execute("""DROP TABLE IF EXISTS conference""")
+	cur.execute("""CREATE TABLE conference
+				(conferenceID INTEGER PRIMARY KEY NOT NULL,
+				name TEXT)""")
+	cur.execute("INSERT INTO conference (name) VALUES (?)",("Other",))
+
+	cur.execute("""DROP TABLE IF EXISTS team""")
+	cur.execute("""CREATE TABLE team
+				(teamID INTEGER PRIMARY KEY NOT NULL,
+				conferenceID INTEGER NOT NULL,
+				name TEXT,
+				FOREIGN KEY (conferenceID) REFERENCES conference(conferenceID))""")
+
+	cur.execute("""DROP TABLE IF EXISTS player""")
+	cur.execute("""CREATE TABLE player
+				(playerID INTEGER PRIMARY KEY NOT NULL,
+				playerName TEXT,
+				teamID INTEGER NOT NULL,
+				FOREIGN KEY (teamID) REFERENCES team(teamID))""")
+
+	cur.execute("""DROP TABLE IF EXISTS game""")
+	cur.execute("""CREATE TABLE game
+				(gameID INTEGER PRIMARY KEY NOT NULL,
+				homeTeamID INTEGER,
+				awayTeamId INTEGER,
+				homeTeamName TEXT,
+				awayTeamName TEXT,
+				gameLink TEXT,
+				FOREIGN KEY (homeTeamID) REFERENCES team(teamID),
+				FOREIGN KEY (awayTeamID) REFERENCES team(teamID))""")
+
+	cur.execute("""DROP TABLE IF EXISTS shot""")
+	cur.execute("""CREATE TABLE shot
+				(shotID INTEGER PRIMARY KEY NOT NULL,
+				gameID INTEGER NOT NULL,
+				playerID INTEGER,
+				playerName TEXT,
+				assistID INTEGER,
+				assistName TEXT,
+				gamePeriod INTEGER,
+				gameMinutes INTEGER,
+				gameSeconds INTEGER,
+				type TEXT,
+				shotNumber INTEGER,
+				made INTEGER,
+				teamScore INTEGER,
+				xPos REAL,
+				yPos REAL,
+				FOREIGN KEY (gameID) REFERENCES game(gameID),
+				FOREIGN KEY (playerID) REFERENCES player(playerID))""")
+
+	cur.commit()
+	cur.close()
 
 def get_teams():
 	#return list of each team and link to their page on ESPN
