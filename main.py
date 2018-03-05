@@ -136,112 +136,114 @@ def parse_game(gameLink):
 	conn = sqlite3.connect('ncaam.db')
 	cur = conn.cursor()
 	gameId = int(re.search(r'gameId=([0-9]+)',gameLink).group(1))
-	boxscoreLink = 'http://www.espn.com/mens-college-basketball/boxscore?gameId={}'.format(gameId)
-	time.sleep(SECONDS_BETWEEN_REQUESTS)
-	boxscorePage = requests.get(boxscoreLink)
-	boxscoreSoup = BeautifulSoup(boxscorePage.text, 'lxml')
-	time.sleep(SECONDS_BETWEEN_REQUESTS)
-	gamePage = requests.get(gameLink)
-	soupPage = BeautifulSoup(gamePage.text, 'lxml')
-	scripts = soupPage.find_all('script', type='text/javascript')
-	homeId = awayId = None
-	homeIdPattern = re.compile(r'espn\.gamepackage\.homeTeamId = "([0-9]+)"')
-	awayIdPattern = re.compile(r'espn\.gamepackage\.awayTeamId = "([0-9]+)"')
-	for script in scripts:
-		homeIdCheck = homeIdPattern.search(script.text)
-		if homeIdCheck:
-			homeId = int(homeIdCheck.group(1))
-		awayIdCheck = awayIdPattern.search(script.text)
-		if awayIdCheck:
-			awayId = int(awayIdCheck.group(1))
-	homeName = soupPage.select('div.team.home div.team-info-wrapper span.long-name')[0].text
-	awayName = soupPage.select('div.team.away div.team-info-wrapper span.long-name')[0].text
-	cur.execute("SELECT teamID FROM team WHERE teamID=?", (homeId,))
-	homeExists = cur.fetchone()
-	if not homeExists:
-		cur.execute("INSERT INTO team (teamID, conferenceID, name) VALUES (?,?,?)", (homeId, 1, homeName))
-	cur.execute("SELECT teamID FROM team WHERE teamID=?", (awayId,))
-	awayExists = cur.fetchone()
-	if not awayExists:
-		cur.execute("INSERT INTO team (teamID, conferenceID, name) VALUES (?,?,?)", (awayId, 1, awayName))
 	cur.execute("SELECT gameID FROM game WHERE gameID=?", (gameId,))
 	gameExists = cur.fetchone()
-	if not awayExists:
+	if not gameExists:
+		boxscoreLink = 'http://www.espn.com/mens-college-basketball/boxscore?gameId={}'.format(gameId)
+		time.sleep(SECONDS_BETWEEN_REQUESTS)
+		boxscorePage = requests.get(boxscoreLink)
+		boxscoreSoup = BeautifulSoup(boxscorePage.text, 'lxml')
+		time.sleep(SECONDS_BETWEEN_REQUESTS)
+		gamePage = requests.get(gameLink)
+		soupPage = BeautifulSoup(gamePage.text, 'lxml')
+		scripts = soupPage.find_all('script', type='text/javascript')
+		homeId = awayId = None
+		homeIdPattern = re.compile(r'espn\.gamepackage\.homeTeamId = "([0-9]+)"')
+		awayIdPattern = re.compile(r'espn\.gamepackage\.awayTeamId = "([0-9]+)"')
+		for script in scripts:
+			homeIdCheck = homeIdPattern.search(script.text)
+			if homeIdCheck:
+				homeId = int(homeIdCheck.group(1))
+			awayIdCheck = awayIdPattern.search(script.text)
+			if awayIdCheck:
+				awayId = int(awayIdCheck.group(1))
+		homeName = soupPage.select('div.team.home div.team-info-wrapper span.long-name')[0].text
+		awayName = soupPage.select('div.team.away div.team-info-wrapper span.long-name')[0].text
+		cur.execute("SELECT teamID FROM team WHERE teamID=?", (homeId,))
+		homeExists = cur.fetchone()
+		if not homeExists:
+			cur.execute("INSERT INTO team (teamID, conferenceID, name) VALUES (?,?,?)", (homeId, 1, homeName))
+		cur.execute("SELECT teamID FROM team WHERE teamID=?", (awayId,))
+		awayExists = cur.fetchone()
+		if not awayExists:
+			cur.execute("INSERT INTO team (teamID, conferenceID, name) VALUES (?,?,?)", (awayId, 1, awayName))
 		cur.execute("INSERT INTO game (gameId, homeTeamId, awayTeamId, homeTeamName, awayTeamName, gameLink) VALUES (?,?,?,?,?,?)",(gameId, homeId, awayId, homeName, awayName, gameLink))
-	conn.commit()
+		conn.commit()
 
-	homeTeam = awayTeam = {}
-	homeTeamLinks = [link.get('href') for link in boxscoreSoup.select('div#gamepackage-boxscore-module div.column-one td.name a')]
-	awayTeamLinks = [link.get('href') for link in boxscoreSoup.select('div#gamepackage-boxscore-module div.column-two td.name a')]
-	widgetsH = ['Getting Home Team: ', progressbar.SimpleProgress()]
-	widgetsA = ['Getting Away Team: ', progressbar.SimpleProgress()]
-	barH = progressbar.ProgressBar(widgets=widgetsH)
-	barA = progressbar.ProgressBar(widgets=widgetsA)
-	for link in barH(homeTeamLinks):
-		playerId = int(re.search(r'id/([0-9]+)', link).group(1))
-		cur.execute("SELECT playerName FROM player WHERE playerID=?", (playerId,))
-		playerExists = cur.fetchone()
-		if not playerExists:
-			time.sleep(SECONDS_BETWEEN_REQUESTS)
-			playerPage = requests.get(link)
-			playerName = BeautifulSoup(playerPage.text, 'lxml').select('div.mod-content h1')[0].text
-			homeTeam[playerName] = playerId
-			cur.execute("INSERT INTO player (playerID, playerName, teamID) VALUES (?,?,?)",(playerId, playerName, homeId))
-		else:
-			homeTeam[playerExists[0]] = playerId
-	for link in barA(awayTeamLinks):
-		playerId = int(re.search(r'id/([0-9]+)', link).group(1))
-		cur.execute("SELECT playerName FROM player WHERE playerID=?", (playerId,))
-		playerExists = cur.fetchone()
-		if not playerExists:
-			time.sleep(SECONDS_BETWEEN_REQUESTS)
-			playerPage = requests.get(link)
-			playerName = BeautifulSoup(playerPage.text, 'lxml').select('div.mod-content h1')[0].text
-			awayTeam[playerName] = playerId
-			cur.execute("INSERT INTO player (playerID, playerName, teamID) VALUES (?,?,?)",(playerId, playerName, awayId))
-		else:
-			awayTeam[playerExists[0]] = playerId
-	conn.commit()
+		homeTeam = awayTeam = {}
+		homeTeamLinks = [link.get('href') for link in boxscoreSoup.select('div#gamepackage-boxscore-module div.column-one td.name a')]
+		awayTeamLinks = [link.get('href') for link in boxscoreSoup.select('div#gamepackage-boxscore-module div.column-two td.name a')]
+		widgetsH = ['Getting Home Team: ', progressbar.SimpleProgress()]
+		widgetsA = ['Getting Away Team: ', progressbar.SimpleProgress()]
+		barH = progressbar.ProgressBar(widgets=widgetsH)
+		barA = progressbar.ProgressBar(widgets=widgetsA)
+		for link in barH(homeTeamLinks):
+			playerId = int(re.search(r'id/([0-9]+)', link).group(1))
+			cur.execute("SELECT playerName FROM player WHERE playerID=?", (playerId,))
+			playerExists = cur.fetchone()
+			if not playerExists:
+				time.sleep(SECONDS_BETWEEN_REQUESTS)
+				playerPage = requests.get(link)
+				playerName = BeautifulSoup(playerPage.text, 'lxml').select('div.mod-content h1')[0].text
+				homeTeam[playerName] = playerId
+				cur.execute("INSERT INTO player (playerID, playerName, teamID) VALUES (?,?,?)",(playerId, playerName, homeId))
+			else:
+				homeTeam[playerExists[0]] = playerId
+		for link in barA(awayTeamLinks):
+			playerId = int(re.search(r'id/([0-9]+)', link).group(1))
+			cur.execute("SELECT playerName FROM player WHERE playerID=?", (playerId,))
+			playerExists = cur.fetchone()
+			if not playerExists:
+				time.sleep(SECONDS_BETWEEN_REQUESTS)
+				playerPage = requests.get(link)
+				playerName = BeautifulSoup(playerPage.text, 'lxml').select('div.mod-content h1')[0].text
+				awayTeam[playerName] = playerId
+				cur.execute("INSERT INTO player (playerID, playerName, teamID) VALUES (?,?,?)",(playerId, playerName, awayId))
+			else:
+				awayTeam[playerExists[0]] = playerId
+		conn.commit()
 
-	shotmap = BeautifulSoup(gamePage.text, 'lxml').find('div', id='gamepackage-shot-chart')
-	playByPlay = BeautifulSoup(gamePage.text, 'lxml').find('div', id='gamepackage-play-by-play')
-	hasPbp = True if playByPlay.text.strip() else False
-	hasShotmap = True if shotmap.text.strip() else False
-	homePbpShots = awayPbpShots = homeShotmapShots = awayShotmapShots = None
-	if hasPbp:
-		homePbpShots,awayPbpShots = parse_pbp(playByPlay,homeTeam,awayTeam)
-	if hasShotmap:
-		homeShotmapShots,awayShotmapShots = parse_shotmap(shotmap)
+		shotmap = BeautifulSoup(gamePage.text, 'lxml').find('div', id='gamepackage-shot-chart')
+		playByPlay = BeautifulSoup(gamePage.text, 'lxml').find('div', id='gamepackage-play-by-play')
+		hasPbp = True if playByPlay.text.strip() else False
+		hasShotmap = True if shotmap.text.strip() else False
+		homePbpShots = awayPbpShots = homeShotmapShots = awayShotmapShots = None
+		if hasPbp:
+			homePbpShots,awayPbpShots = parse_pbp(playByPlay,homeTeam,awayTeam)
+		if hasShotmap:
+			homeShotmapShots,awayShotmapShots = parse_shotmap(shotmap)
 
-	if hasPbp and hasShotmap:
-		if len(homePbpShots) == len(homeShotmapShots):
-			homeShots = [(gameId,) + homePbpShots[i] + homeShotmapShots[i] for i in range(len(homePbpShots))]
-			cur.executemany("INSERT INTO shot (gameID, playerID, playerName, assistID, assistName, gamePeriod, gameMinutes, gameSeconds, type, shotNumber, made, teamScore, xPos, yPos) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
-							homeShots)
+		if hasPbp and hasShotmap:
+			if len(homePbpShots) == len(homeShotmapShots):
+				homeShots = [(gameId,) + homePbpShots[i] + homeShotmapShots[i] for i in range(len(homePbpShots))]
+				cur.executemany("INSERT INTO shot (gameID, playerID, playerName, assistID, assistName, gamePeriod, gameMinutes, gameSeconds, type, shotNumber, made, teamScore, xPos, yPos) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+								homeShots)
+				conn.commit()
+			else:
+				print("Home shot counts DON'T match for game: {}".format(gameLink), flush=True)
+			if len(awayPbpShots) == len(awayShotmapShots):
+				awayShots = [(gameId,) + awayPbpShots[i] + awayShotmapShots[i] for i in range(len(awayPbpShots))]
+				cur.executemany("INSERT INTO shot (gameID, playerID, playerName, assistID, assistName, gamePeriod, gameMinutes, gameSeconds, type, shotNumber, made, teamScore, xPos, yPos) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+								awayShots)
+				conn.commit()
+			else:
+				print("Away shot counts DON'T match for game: {}".format(gameLink), flush=True)
+		elif hasPbp:
+			homeShots = [(gameId,) + shot for shot in homePbpShots]
+			cur.executemany("INSERT INTO shot (gameID, playerID, playerName, assistID, assistName, gamePeriod, gameMinutes, gameSeconds, type, shotNumber, made, teamScore) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)", homeShots)
+			awayShots = [(gameId,) + shot for shot in awayPbpShots]
+			cur.executemany("INSERT INTO shot (gameID, playerID, playerName, assistID, assistName, gamePeriod, gameMinutes, gameSeconds, type, shotNumber, made, teamScore) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)", awayShots)
+			conn.commit()
+		elif hasShotmap:
+			homeShots = [(gameId,) + shot for shot in homeShotmapShots]
+			cur.execute("INSERT INTO shot (gameID, xPos, yPos) VALUES (?,?,?)", homeShots)
+			awayshots = [(gameId,) + shot for shot in awayShotmapShots]
+			cur.execute("INSERT INTO shot (gameID, xPos, yPos) VALUES (?,?,?)", awayShots)
 			conn.commit()
 		else:
-			print("Home shot counts DON'T match for game: {}".format(gameLink), flush=True)
-		if len(awayPbpShots) == len(awayShotmapShots):
-			awayShots = [(gameId,) + awayPbpShots[i] + awayShotmapShots[i] for i in range(len(awayPbpShots))]
-			cur.executemany("INSERT INTO shot (gameID, playerID, playerName, assistID, assistName, gamePeriod, gameMinutes, gameSeconds, type, shotNumber, made, teamScore, xPos, yPos) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
-							awayShots)
-			conn.commit()
-		else:
-			print("Away shot counts DON'T match for game: {}".format(gameLink), flush=True)
-	elif hasPbp:
-		homeShots = [(gameId,) + shot for shot in homePbpShots]
-		cur.executemany("INSERT INTO shot (gameID, playerID, playerName, assistID, assistName, gamePeriod, gameMinutes, gameSeconds, type, shotNumber, made, teamScore) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)", homeShots)
-		awayShots = [(gameId,) + shot for shot in awayPbpShots]
-		cur.executemany("INSERT INTO shot (gameID, playerID, playerName, assistID, assistName, gamePeriod, gameMinutes, gameSeconds, type, shotNumber, made, teamScore) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)", awayShots)
-		conn.commit()
-	elif hasShotmap:
-		homeShots = [(gameId,) + shot for shot in homeShotmapShots]
-		cur.execute("INSERT INTO shot (gameID, xPos, yPos) VALUES (?,?,?)", homeShots)
-		awayshots = [(gameId,) + shot for shot in awayShotmapShots]
-		cur.execute("INSERT INTO shot (gameID, xPos, yPos) VALUES (?,?,?)", awayShots)
-		conn.commit()
+			print("Game page has no shotmap or play-by-play", flush=True)
 	else:
-		print("Game page has no shotmap or play-by-play", flush=True)
+		print("** Game already exists in database **")
 
 	conn.close()
 
