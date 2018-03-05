@@ -178,25 +178,29 @@ def parse_game(gameLink):
 	barH = progressbar.ProgressBar(widgets=widgetsH)
 	barA = progressbar.ProgressBar(widgets=widgetsA)
 	for link in barH(homeTeamLinks):
-		time.sleep(SECONDS_BETWEEN_REQUESTS)
-		playerPage = requests.get(link)
-		playerName = BeautifulSoup(playerPage.text, 'lxml').select('div.mod-content h1')[0].text
 		playerId = int(re.search(r'id/([0-9]+)', link).group(1))
-		homeTeam[playerName] = playerId
-		cur.execute("SELECT playerID FROM player WHERE playerID=?", (playerId,))
+		cur.execute("SELECT playerName FROM player WHERE playerID=?", (playerId,))
 		playerExists = cur.fetchone()
 		if not playerExists:
+			time.sleep(SECONDS_BETWEEN_REQUESTS)
+			playerPage = requests.get(link)
+			playerName = BeautifulSoup(playerPage.text, 'lxml').select('div.mod-content h1')[0].text
+			homeTeam[playerName] = playerId
 			cur.execute("INSERT INTO player (playerID, playerName, teamID) VALUES (?,?,?)",(playerId, playerName, homeId))
+		else:
+			homeTeam[playerExists[0]] = playerId
 	for link in barA(awayTeamLinks):
-		time.sleep(SECONDS_BETWEEN_REQUESTS)
-		playerPage = requests.get(link)
-		playerName = BeautifulSoup(playerPage.text, 'lxml').select('div.mod-content h1')[0].text
 		playerId = int(re.search(r'id/([0-9]+)', link).group(1))
-		awayTeam[playerName] = playerId
-		cur.execute("SELECT playerID FROM player WHERE playerID=?", (playerId,))
+		cur.execute("SELECT playerName FROM player WHERE playerID=?", (playerId,))
 		playerExists = cur.fetchone()
 		if not playerExists:
+			time.sleep(SECONDS_BETWEEN_REQUESTS)
+			playerPage = requests.get(link)
+			playerName = BeautifulSoup(playerPage.text, 'lxml').select('div.mod-content h1')[0].text
+			awayTeam[playerName] = playerId
 			cur.execute("INSERT INTO player (playerID, playerName, teamID) VALUES (?,?,?)",(playerId, playerName, awayId))
+		else:
+			awayTeam[playerExists[0]] = playerId
 	conn.commit()
 
 	shotmap = BeautifulSoup(gamePage.text, 'lxml').find('div', id='gamepackage-shot-chart')
