@@ -12,11 +12,12 @@ import progressbar
 
 #allow for specifying year?
 SECONDS_BETWEEN_REQUESTS = 5
+DB_NAME = 'ncaam.db'
 
 def main():
 	init_database()
 	conferences = get_teams()
-	conn = sqlite3.connect('ncaam.db')
+	conn = sqlite3.connect(DB_NAME)
 	cur = conn.cursor()
 	for c in conferences:
 		print("\n=========== {} ===========".format(c), flush=True)
@@ -36,7 +37,7 @@ def main():
 	conn.close()
 
 def init_database():
-	conn = sqlite3.connect('ncaam.db')
+	conn = sqlite3.connect(DB_NAME)
 	cur = conn.cursor()
 	cur.execute("""DROP TABLE IF EXISTS conference""")
 	cur.execute("""CREATE TABLE conference
@@ -133,7 +134,7 @@ def get_games(teamScheduleLink):
 
 def parse_game(gameLink):
 	#parse a given game
-	conn = sqlite3.connect('ncaam.db')
+	conn = sqlite3.connect(DB_NAME)
 	cur = conn.cursor()
 	gameId = int(re.search(r'gameId=([0-9]+)',gameLink).group(1))
 	cur.execute("SELECT gameID FROM game WHERE gameID=?", (gameId,))
