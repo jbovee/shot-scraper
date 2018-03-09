@@ -255,8 +255,6 @@ def parse_game(gameLink):
 			awayshots = [(gameId,) + shot for shot in awayShotmapShots]
 			cur.execute("INSERT INTO shot (gameID, xPos, yPos) VALUES (?,?,?)", awayShots)
 			conn.commit()
-		else:
-			print("Game page has no shotmap or play-by-play", flush=True)
 
 	conn.close()
 
