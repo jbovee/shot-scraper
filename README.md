@@ -20,3 +20,4 @@ Just some ideas I have for future improvements/additions
   - Updating database vs initializing
 - Add some type of log keeping for when shotmap count and play by play count don't match, and other errors
   - Maybe by using decorators?
+- Add check to make sure game has ended (checking for 'Final' near top of page). Games still being played don't look any different from just the url perspective
