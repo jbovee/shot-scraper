@@ -20,7 +20,7 @@ def main():
 	conn = sqlite3.connect(DB_NAME)
 	cur = conn.cursor()
 	customBarFormat = '{desc}{elapsed} {n_fmt}/{total_fmt}|{bar}|{postfix}'
-	confBar = tqdm(list(conferences.keys()), bar_format=customBarFormat, desc="Conference")
+	confBar = tqdm(list(conferences.keys()), bar_format=customBarFormat, desc="Conference: ")
 	for c in confBar:
 		confBar.set_postfix(conf=c)
 		confBar.refresh()
@@ -31,7 +31,7 @@ def main():
 			conn.commit()
 		cur.execute("SELECT conferenceID FROM conference WHERE name=?",(c,))
 		confId = cur.fetchone()[0]
-		teamBar = tqdm(conferences[c].keys(), bar_format=customBarFormat, desc="Team")
+		teamBar = tqdm(conferences[c].keys(), bar_format=customBarFormat, desc="Team: ")
 		for team in teamBar:
 			teamBar.set_postfix(team=team)
 			teamBar.refresh()
@@ -129,7 +129,7 @@ def get_team_stats(teamScheduleLink):
 	#wont have court location info
 	games = get_games(teamScheduleLink)
 	customBarFormat = '{desc}{elapsed} {n_fmt}/{total_fmt}|{bar}|{postfix}'
-	gameBar = tqdm(games, bar_format=customBarFormat, desc="Game")
+	gameBar = tqdm(games, bar_format=customBarFormat, desc="Game: ")
 	for game in gameBar:
 		parse_game(game)
 
@@ -186,7 +186,7 @@ def parse_game(gameLink):
 		homeTeamLinks = [link.get('href') for link in boxscoreSoup.select('div#gamepackage-boxscore-module div.column-one td.name a')]
 		awayTeamLinks = [link.get('href') for link in boxscoreSoup.select('div#gamepackage-boxscore-module div.column-two td.name a')]
 		customBarFormat = '{desc}{elapsed} {n_fmt}/{total_fmt}|{bar}|{postfix}'
-		homeTeamBar = tqdm(homeTeamLinks, bar_format=customBarFormat, desc="Home Team")
+		homeTeamBar = tqdm(homeTeamLinks, bar_format=customBarFormat, desc="Home Team: ")
 		for link in homeTeamBar:
 			playerId = int(re.search(r'id/([0-9]+)', link).group(1))
 			cur.execute("SELECT playerName FROM player WHERE playerID=?", (playerId,))
@@ -200,7 +200,7 @@ def parse_game(gameLink):
 			else:
 				homeTeam[playerExists[0]] = playerId
 		homeTeamBar.close()
-		awayTeamBar = tqdm(awayTeamLinks, bar_format=customBarFormat, desc="Away Team")
+		awayTeamBar = tqdm(awayTeamLinks, bar_format=customBarFormat, desc="Away Team: ")
 		for link in awayTeamBar:
 			playerId = int(re.search(r'id/([0-9]+)', link).group(1))
 			cur.execute("SELECT playerName FROM player WHERE playerID=?", (playerId,))
