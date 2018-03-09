@@ -171,7 +171,6 @@ def parse_game(gameLink):
 		awayExists = cur.fetchone()
 		if not awayExists:
 			cur.execute("INSERT INTO team (teamID, conferenceID, name) VALUES (?,?,?)", (awayId, 1, awayName))
-		cur.execute("INSERT INTO game (gameId, homeTeamId, awayTeamId, homeTeamName, awayTeamName, gameLink) VALUES (?,?,?,?,?,?)",(gameId, homeId, awayId, homeName, awayName, gameLink))
 		conn.commit()
 
 		homeTeam = awayTeam = {}
@@ -216,6 +215,8 @@ def parse_game(gameLink):
 			homePbpShots,awayPbpShots = parse_pbp(playByPlay,homeTeam,awayTeam)
 		if hasShotmap:
 			homeShotmapShots,awayShotmapShots = parse_shotmap(shotmap)
+			
+		cur.execute("INSERT INTO game (gameId, homeTeamId, awayTeamId, homeTeamName, awayTeamName, gameLink) VALUES (?,?,?,?,?,?)",(gameId, homeId, awayId, homeName, awayName, gameLink))
 
 		if hasPbp and hasShotmap:
 			if len(homePbpShots) == len(homeShotmapShots):
