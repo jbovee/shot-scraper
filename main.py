@@ -234,15 +234,11 @@ def parse_game(gameLink):
 				cur.executemany("INSERT INTO shot (gameID, playerID, playerName, assistID, assistName, gamePeriod, gameMinutes, gameSeconds, type, shotNumber, made, teamScore, xPos, yPos) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
 								homeShots)
 				conn.commit()
-			else:
-				print("Home shot counts DON'T match for game: {}".format(gameLink), flush=True)
 			if len(awayPbpShots) == len(awayShotmapShots):
 				awayShots = [(gameId,) + awayPbpShots[i] + awayShotmapShots[i] for i in range(len(awayPbpShots))]
 				cur.executemany("INSERT INTO shot (gameID, playerID, playerName, assistID, assistName, gamePeriod, gameMinutes, gameSeconds, type, shotNumber, made, teamScore, xPos, yPos) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
 								awayShots)
 				conn.commit()
-			else:
-				print("Away shot counts DON'T match for game: {}".format(gameLink), flush=True)
 		elif hasPbp:
 			homeShots = [(gameId,) + shot for shot in homePbpShots]
 			cur.executemany("INSERT INTO shot (gameID, playerID, playerName, assistID, assistName, gamePeriod, gameMinutes, gameSeconds, type, shotNumber, made, teamScore) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)", homeShots)
