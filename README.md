@@ -1,3 +1,5 @@
+## **Note: Script still works, however I just discovered a much larger, more complete, and neater dataset was very recently put up by the NCAA and Sportradar on Google Cloud/BigQuery [link](https://console.cloud.google.com/launcher/details/ncaa-bb-public/ncaa-basketball). Discovered due to [a post on reddit.com/r/dataisbeautiful by user /u/minimaxir](https://www.reddit.com/r/dataisbeautiful/comments/837qnu/heat_map_of_1058383_basketball_shots_from_ncaa/)**
+
 # Shot Scraper
 Parsing play by play and shot location info from ESPN for NCAA Men's College Basketball
 
