@@ -1,5 +1,6 @@
 from bs4 import BeautifulSoup
 from fuzzywuzzy import fuzz, process
+from tqdm import tqdm, trange
 import requests
 import lxml
 import sys
@@ -8,7 +9,6 @@ import re
 import json
 import time
 import sqlite3
-import progressbar
 
 #allow for specifying year?
 SECONDS_BETWEEN_REQUESTS = 5
@@ -19,8 +19,11 @@ def main():
 	conferences = get_teams()
 	conn = sqlite3.connect(DB_NAME)
 	cur = conn.cursor()
-	for c in conferences:
-		print("\n=========== {} ===========".format(c), flush=True)
+	customBarFormat = '{desc}{elapsed} {n_fmt}/{total_fmt}|{bar}|{postfix}'
+	confBar = tqdm(list(conferences.keys()), bar_format=customBarFormat, desc="Conference")
+	for c in confBar:
+		confBar.set_postfix(conf=c)
+		confBar.refresh()
 		cur.execute("SELECT conferenceID FROM conference WHERE name=?",(c,))
 		confExists = cur.fetchone()
 		if not confExists:
@@ -28,8 +31,10 @@ def main():
 			conn.commit()
 		cur.execute("SELECT conferenceID FROM conference WHERE name=?",(c,))
 		confId = cur.fetchone()[0]
-		for team in conferences[c]:
-			print("\n----------- {} -----------".format(team), flush=True)
+		teamBar = tqdm(conferences[c].keys(), bar_format=customBarFormat, desc="Team")
+		for team in teamBar:
+			teamBar.set_postfix(team=team)
+			teamBar.refresh()
 			insert = (conferences[c][team]["teamId"],confId,team)
 			cur.execute("SELECT teamID FROM team WHERE teamID=?", (conferences[c][team]["teamId"],))
 			teamExists = cur.fetchone()
@@ -37,6 +42,9 @@ def main():
 				cur.execute("INSERT INTO team (teamID, conferenceID, name) VALUES (?,?,?)", insert)
 				conn.commit()
 			get_team_stats(conferences[c][team]['teamScheduleLink'])
+		teamBar.close()
+	confBar.close()
+	print()
 	conn.close()
 
 def init_database():
@@ -120,9 +128,10 @@ def get_team_stats(teamScheduleLink):
 	#check for those and instead use just the timeline to extract shot info
 	#wont have court location info
 	games = get_games(teamScheduleLink)
-	for g in range(len(games)):
-		print("Parsing game {} of {}".format(g+1,len(games)+1), flush=True)
-		parse_game(games[g])
+	customBarFormat = '{desc}{elapsed} {n_fmt}/{total_fmt}|{bar}|{postfix}'
+	gameBar = tqdm(games, bar_format=customBarFormat, desc="Game")
+	for game in gameBar:
+		parse_game(game)
 
 def get_games(teamScheduleLink):
 	#return a list of game links given a teams schedule page
@@ -176,11 +185,9 @@ def parse_game(gameLink):
 		homeTeam = awayTeam = {}
 		homeTeamLinks = [link.get('href') for link in boxscoreSoup.select('div#gamepackage-boxscore-module div.column-one td.name a')]
 		awayTeamLinks = [link.get('href') for link in boxscoreSoup.select('div#gamepackage-boxscore-module div.column-two td.name a')]
-		widgetsH = ['Getting Home Team: ', progressbar.SimpleProgress()]
-		widgetsA = ['Getting Away Team: ', progressbar.SimpleProgress()]
-		barH = progressbar.ProgressBar(widgets=widgetsH)
-		barA = progressbar.ProgressBar(widgets=widgetsA)
-		for link in barH(homeTeamLinks):
+		customBarFormat = '{desc}{elapsed} {n_fmt}/{total_fmt}|{bar}|{postfix}'
+		homeTeamBar = tqdm(homeTeamLinks, bar_format=customBarFormat, desc="Home Team")
+		for link in homeTeamBar:
 			playerId = int(re.search(r'id/([0-9]+)', link).group(1))
 			cur.execute("SELECT playerName FROM player WHERE playerID=?", (playerId,))
 			playerExists = cur.fetchone()
@@ -192,7 +199,9 @@ def parse_game(gameLink):
 				cur.execute("INSERT INTO player (playerID, playerName, teamID) VALUES (?,?,?)",(playerId, playerName, homeId))
 			else:
 				homeTeam[playerExists[0]] = playerId
-		for link in barA(awayTeamLinks):
+		homeTeamBar.close()
+		awayTeamBar = tqdm(awayTeamLinks, bar_format=customBarFormat, desc="Away Team")
+		for link in awayTeamBar:
 			playerId = int(re.search(r'id/([0-9]+)', link).group(1))
 			cur.execute("SELECT playerName FROM player WHERE playerID=?", (playerId,))
 			playerExists = cur.fetchone()
@@ -204,6 +213,7 @@ def parse_game(gameLink):
 				cur.execute("INSERT INTO player (playerID, playerName, teamID) VALUES (?,?,?)",(playerId, playerName, awayId))
 			else:
 				awayTeam[playerExists[0]] = playerId
+		awayTeamBar.close()
 		conn.commit()
 
 		shotmap = BeautifulSoup(gamePage.text, 'lxml').find('div', id='gamepackage-shot-chart')
