@@ -17,3 +17,6 @@ Just some ideas I have for future improvements/additions
 
 - Wrap whole process in a single function and add arguments
   - Argument for specifying season/year
+  - Updating database vs initializing
+- Add some type of log keeping for when shotmap count and play by play count don't match, and other errors
+  - Maybe by using decorators?
