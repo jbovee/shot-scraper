@@ -21,8 +21,11 @@ def main():
 	cur = conn.cursor()
 	for c in conferences:
 		print("\n=========== {} ===========".format(c), flush=True)
-		cur.execute("INSERT INTO conference (name) VALUES (?)",(c,))
-		conn.commit()
+		cur.execute("SELECT conferenceID FROM conference WHERE name=?",(c,))
+		confExists = cur.fetchone()
+		if not confExists:
+			cur.execute("INSERT INTO conference (name) VALUES (?)",(c,))
+			conn.commit()
 		cur.execute("SELECT conferenceID FROM conference WHERE name=?",(c,))
 		confId = cur.fetchone()[0]
 		for team in conferences[c]:
