@@ -225,7 +225,7 @@ def parse_game(gameLink):
 			homePbpShots,awayPbpShots = parse_pbp(playByPlay,homeTeam,awayTeam)
 		if hasShotmap:
 			homeShotmapShots,awayShotmapShots = parse_shotmap(shotmap)
-			
+
 		cur.execute("INSERT INTO game (gameId, homeTeamId, awayTeamId, homeTeamName, awayTeamName, gameLink) VALUES (?,?,?,?,?,?)",(gameId, homeId, awayId, homeName, awayName, gameLink))
 
 		if hasPbp and hasShotmap:
@@ -257,8 +257,6 @@ def parse_game(gameLink):
 			conn.commit()
 		else:
 			print("Game page has no shotmap or play-by-play", flush=True)
-	else:
-		print("** Game already exists in database **")
 
 	conn.close()
 
